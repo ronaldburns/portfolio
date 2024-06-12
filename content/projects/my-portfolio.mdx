@@ -1,0 +1,68 @@
+---
+title: My Portfolio
+description: What I experienced and learned during the development of THIS website.
+date: "June 12, 2024"
+published: true
+---
+
+# Building My Portfolio with Next.js, TailwindCSS, and Vercel
+
+Creating a personal portfolio that showcases my skills and projects has been an exciting journey. With a solid background in Next.js, I decided to leverage this framework to build a fast, dynamic, and visually appealing portfolio and blog. Here's a detailed breakdown of the technologies and processes I used.
+
+## The Tech Stack
+
+### Next.js
+
+As a framework that I've been extremely experienced with, Next.js was an obvious choice. Next.js offers server-side rendering, static site generation, and API routes, making it perfect for creating a robust and scalable portfolio.
+
+### Vercel
+
+While I initially wanted to automate the containerization and deployment of my blog to a multi-cloud infrastructure, time constraints led me to use Vercel. Vercel provides a super quick and easy deployment process and integrates seamlessly with Next.js, allowing me to focus on development without worrying about the deployment pipeline.
+
+### TailwindCSS
+
+For styling, I utilized [TailwindCSS](https://tailwindcss.com/), a utility-first CSS framework that enables rapid UI development. TailwindCSS's class-based approach allows for easy theming and component styling, which I've been a fan of for many years.
+
+### ShadCN
+
+While the template I found on [Chronark](https://chronark.com/) was excellent, I opted to enhance it with components from [shadcn](https://ui.shadcn.com/). ShadCN provides a rich library of customizable components that align with modern design principles, making it a valuable addition to my project.
+
+### Content Layer
+
+To manage my blog posts, I implemented [Content Layer](https://www.contentlayer.dev/), a content management solution that allows me to write posts in Markdown. Content Layer parses these Markdown files and exposes them as JSON objects, making it easy to render them as HTML. One challenge I faced was ensuring the files had "LF" line endings, as Content Layer doesn't handle "CRLF" well on Windows. Thankfully, this can be managed via `.gitattributes` in GitHub and VSCode settings.
+
+## Future Enhancements
+
+### Analytics
+
+I am keen to implement a more sophisticated view count system for my blog posts. Currently, the example increment system is not ideal. Vercel Analytics provides detailed page view statistics, but accessing this data requires utilizing their API. My plan is to create a server function in Next.js to fetch and display this information accurately.
+
+### Media Storage
+
+All media on the site is hosted on Vercel's Blob Storage, which uses Cloudflare R2 as the backend. Having used R2 since its closed beta, I can attest to its reliability and cost-effectiveness compared to AWS S3.
+
+### KV Storage
+
+Vercel's KV backend, powered by Redis, enables fast data read/write operations. I use this for custom anonymous analytics, a prototype page-view system, and caching database queries. This setup ensures that my site remains responsive and efficient.
+
+## The Experience
+
+Building this site has been immensely enjoyable. The seamless integration between writing blog posts, pushing them to GitHub, and having Vercel automatically update the site within minutes is fantastic. While there are still improvements to be made, this project has been a valuable learning experience and a testament to the power of modern web development tools.
+
+### Conclusion
+
+Creating a portfolio site with Next.js, TailwindCSS, and Vercel has been a rewarding experience. These technologies not only facilitated a smooth development process but also provided a robust platform for showcasing my skills and projects. I look forward to continuing to enhance and optimize my portfolio, leveraging the powerful features and integrations these tools offer.
+
+![Portfolio Screenshot](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/my-portfolio/msedge_wE7LSfVec6-bmHFS4Cv8XWhceRs1QylraC5eMTr5t.png)
+
+For anyone looking to build a personal portfolio or blog, I highly recommend exploring these technologies. The combination of Next.js, Vercel, TailwindCSS, and Content Layer offers a powerful and flexible foundation for any web project.
+
+Stay tuned for more updates and tutorials!
+
+## Links
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Vercel](https://vercel.com/)
+- [Content Layer](https://www.contentlayer.dev/)
+- [shadcn](https://ui.shadcn.com/)
