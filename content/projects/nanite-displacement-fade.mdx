@@ -1,0 +1,68 @@
+---
+title: Nanite Displacement Fade
+description: Insights into how Nanite displacement fading works based on resolution and its impact on performance and visual fidelity.
+date: "April 15, 2024"
+published: true
+image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/nanite-displacement-fade/nanite-tesselation-PyYjrvvmt7X2uZaE9fasT6AfPaQ905.png
+---
+
+## Understanding Nanite Displacement Fading
+
+I've been diving deep into Unreal Engine's Nanite technology, and I’ve come across some exciting insights about Nanite displacement fading. Let's explore how this feature works and how you can use it to boost performance without sacrificing visual quality.
+
+### Key Findings
+
+#### Resolution-Based Fading
+
+Nanite displacement fading is tied to resolution rather than distance. As resolution decreases, the displacement effect fades out. This can optimize performance while keeping visuals sharp where it matters most.
+
+- **Adjusting Resolution Settings**: Lets you control when and how Nanite displacement kicks in, ensuring detailed models are only rendered when needed.
+
+#### Performance Improvements
+
+- **Disabling Nanite Displacement**: Removes the affected pixels from the "Pixel Programmable" pass. This significantly cuts down on pixel processing, especially in complex scenes.
+- **Balancing Quality and Performance**: Maintains high visual fidelity up close while easing the computational load for distant objects.
+
+### Demonstrations
+
+To see these findings in action, check out the videos below:
+
+**Displacement Disabling**
+
+I've **greatly** exagerated the start and end fade pixels so you can see how this effect works up close.
+
+<video controls autoPlay loop>
+  <source src="https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/nanite-displacement-fade/UnrealEditor-Win64-DebugGame_tAz0zvi1Sl-fdcwl1Cc0puhYGySRikW1cH0NeFB7x.mp4" />
+</video>
+
+**Pixel Programmable Pass Removal at Distance**
+
+This video shows the "Pixel Programmable" pass being removed at far distances, highlighting the efficiency of resolution-based displacement fading.
+
+<video controls autoPlay loop>
+  <source src="https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/nanite-displacement-fade/UnrealEditor-Win64-DebugGame_LccD2B7lrm-D9SkipLJ375pG9wLkh9qkNS2iXQuVa.mp4" />
+</video>
+
+### Material Editor Settings
+
+Here’s how you can configure these settings in the material editor:
+
+- **Enable Displacement Fade**
+
+  - Whether or not displacement fade is enabled.
+
+- **DisplacementFadeRange**
+  - **Start Fade Size (Pixels)**:
+    - How large the max displacement should be, in on-screen pixels, when beginning to fade out displacement.
+    - **Note**: This should be a larger number than End Fade Size.
+  - **End Fade Size (Pixels)**:
+    - How large the max displacement should be, in on-screen pixels, when fading out should complete, and displacement should be disabled.
+    - **Note**: This should be a smaller number than Start Fade Size.
+
+Here's a screenshot of the settings in the material editor:
+
+![Material Editor Settings](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/nanite-displacement-fade/UnrealEditor-Win64-DebugGame_HWmdOTTQzW-XsePgiz2kGZ69CTeQMfsZLUctGYiiv.png)
+
+### Conclusion
+
+Leveraging Nanite displacement fading based on resolution is a game-changer for optimizing Unreal Engine projects. By controlling displacement effects strategically, you can maintain a balance between performance and visual fidelity, ensuring your projects run smoothly without losing their visual appeal.

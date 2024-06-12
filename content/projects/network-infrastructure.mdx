@@ -1,0 +1,49 @@
+---
+title: Building Network Infrastructure
+description: A deep dive into the sophisticated network infrastructure set up to ensure zero downtime, high security, and cost efficiency.
+date: "Oct 14, 2022"
+published: true
+image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/network-infrastructure/Illustrator_Hn3MeXRfOB-MKoWzTWSNvoYBGSMGhu9DH5vNqmJnX.png
+---
+
+## Introduction
+
+Setting up a robust, secure, and cost-effective network infrastructure is a crucial part of modern web development. I wanted to share my experience and the strategies I used to achieve this. This network setup ensures that traffic is efficiently managed, downtime is minimized, and costs are kept under control.
+
+## Network Infrastructure Overview
+
+When a user interacts with my website, the DNS record directs the traffic to Cloudflare. Cloudflare uses geo-location to select the optimal server region based on the user's location. This approach ensures that users experience minimal latency and fast load times.
+
+### Traffic Routing and Load Balancing
+
+The traffic flow begins with Cloudflare's DNS, which intelligently routes requests to the nearest data center using its Argo smart geographical routing. Once the traffic reaches Cloudflare, it is forwarded to my public load balancers located in multiple regions (e.g., the US, Europe, and Asia).
+
+Here's a visual representation of the infrastructure:
+
+![Network Infrastructure](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/network-infrastructure/Illustrator_Hn3MeXRfOB-MKoWzTWSNvoYBGSMGhu9DH5vNqmJnX.png)
+
+The public load balancers (L3) distribute the traffic to smaller layer 4 (L4) load balancers. These L4 load balancers then send the traffic to the appropriate server within a large pool hosted across multiple cloud providers. This layered approach ensures high availability and scalability.
+
+### Application Handling
+
+Hashicorp Consul plays a pivotal role in managing the traffic within my server clusters. Consul handles service discovery and load balancing between multiple instances of my application. This ensures that the traffic is efficiently managed and distributed to prevent any single instance from being overwhelmed.
+
+### Security and Zero-Trust Infrastructure
+
+Security is a top priority in my network setup. The entire system follows a zero-trust infrastructure model, meaning that all traffic is encrypted from the user to the application. This end-to-end encryption ensures that data remains secure during transmission, adhering to modern security standards.
+
+### Redundancy and Reliability
+
+To achieve near-zero downtime, I have implemented several redundancies. By utilizing multiple cloud providers, the infrastructure can withstand failures in any single provider. Additionally, the load balancers and Consul's service discovery ensure that traffic is dynamically rerouted in case of any server or instance failure.
+
+### Cost Efficiency
+
+One of the significant advantages of this setup is cost efficiency. By being cloud-agnostic, I can select the most cost-effective cloud providers without compromising performance or reliability. This flexibility allows me to scale resources based on demand while keeping costs under control.
+
+## Conclusion
+
+Building this network infrastructure has been a rewarding experience, allowing me to ensure that my applications are always available, secure, and performant. The combination of Cloudflare's geo-location routing, layered load balancing, Hashicorp Consul's service discovery, and a zero-trust security model creates a resilient and efficient system.
+
+Feel free to reach out if you have any questions or need further insights into setting up a similar infrastructure for your projects.
+
+Stay tuned for more updates and detailed breakdowns of the techniques I used!

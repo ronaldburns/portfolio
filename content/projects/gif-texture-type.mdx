@@ -1,0 +1,37 @@
+---
+title: Gif Texture Type
+description: How I added GIF support to Unreal Engine
+date: "July 10, 2022"
+published: true
+---
+
+# Adding GIF Support to Unreal Engine
+
+I spent the day learning how to add GIF support to Unreal Engine. It was a fun challenge, and I'm excited to share my process with you.
+
+## Why GIF Support?
+
+GIFs are a popular format for sharing short animations and clips. Adding GIF support to Unreal Engine allows developers to easily incorporate animated textures into their projects. This feature can enhance the visual appeal of games, simulations, and other interactive experiences, making them more engaging and dynamic.
+
+I needed GIF support for my game, Holodeck. As I want to support animated profile pictures, I decided to add GIF support to Unreal Engine.
+
+## The Process
+
+This porcess involved several steps:
+  - **Parsing GIF Files**: I had to write a parser to extract the frames and timing information from GIF files.
+  - **Decoding Frames**: I created a custom library to decode the frames into bytestreams.
+  - **Render the Frames**: I created a custom asset type to render the frames to a texture on the Render Thread.
+
+## Challenges Faced
+
+The main challenge I faced was optimizing the rendering process. GIFs can have a large number of frames, and rendering them all at once can be computationally expensive. I had to implement optimizations to ensure smooth playback and minimal performance impact.
+
+## Results
+
+The GIFs played smoothly, and the visual impact was impressive. I'm excited to see how this feature enhances the overall experience for players and creators.
+
+Here's GIFs as an asset type
+<video controls autoPlay loop><source src="https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gif-texture-type/UnrealEditor_cCXW30IcGz-mo7jzwjMwS8VvjrGKJ76p2tDAvLuZl.mp4" /></video>
+
+Example of downloading a GIF from the internet
+<video controls autoPlay loop><source src="https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gif-texture-type/UnrealEditor_C2REpcXmbF-dmMyiwPXv60DMx4HhsWVyTRh1ksBn8.mp4" /></video>
