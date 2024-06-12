@@ -1,0 +1,273 @@
+---
+title: PCG Random Filter
+description: A custom node for PCG designed to randomly filter points, with a special added feature.
+date: "Feb 16, 2024"
+published: true
+image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/pcg-random-filter/UnrealEditor-Win64-DebugGame_t3o0U3jXg8-OWheSEQnkLY0jBw2cJ8odTfGS5GyC5.png
+---
+
+# Holodeck Dev Blog: The Awesome Random Filter Node for PCG
+
+Hey everyone! I'm super excited to share something I've been working on: a custom Random Filter node for the Procedural Content Generation (PCG) framework in Unreal Engine. This node is a game-changer for filtering input points randomly while ensuring they meet specific conditions. Let's dive into the cool features and variables of this node.
+
+## Features of the Random Filter Node
+
+### Random Point Selection
+
+At its core, this filter node takes all the input points and filters them down to a random few. By default, any point in the list can be selected, giving you a broad range of possibilities.
+
+### Minimum Distance Between Points
+
+One of the standout features is the `bEnableMinimumDistanceBetweenPoints` option. When enabled, it ensures that if a point is selected, no other point within the specified minimum distance will be selected. This is incredibly useful for maintaining a certain spacing between points in your PCG setup.
+
+### Maximum Output Points
+
+Another handy feature is the `bEnableMaxOutput` option. When enabled, you can specify the maximum number of points to output, providing fine control over the density of points.
+
+## Key Variables
+
+Here's a quick rundown of the main variables you can tweak:
+
+- **bEnableMaxOutput**: Enables the maximum number of points to output.
+- **MaxOutput**: The maximum number of points to output when `bEnableMaxOutput` is enabled.
+- **bEnableMinimumDistanceBetweenPoints**: Ensures selected points maintain a minimum distance from each other.
+- **MinimumDistanceBetweenPoints**: The minimum distance to maintain between points when `bEnableMinimumDistanceBetweenPoints` is enabled.
+
+### Details Panel
+
+Check out what the properties look like in the Unreal Engine details panel:
+
+![Details Panel](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/pcg-random-filter/UnrealEditor-Win64-DebugGame_fdGcQ8tMjX-vOJbPOzQD8WWtOaYvvFqw8FIMK5c1r.png)
+
+### Using the Node in a World
+
+Here's an example of how I've been using this node with PCG points in a world. You can see how it filters points to create a more natural and controlled distribution:
+
+![PCG Points in World](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/pcg-random-filter/sP9yzlZOBt-jBZprKWPHCGTOgShoiGdhpnS8Re4Bl.jpg)
+
+Filter the points to a maximum of 4000:
+![Filtered Points](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/pcg-random-filter/hgSR9gaesq-0Sx2bxLoVj4WnikpQ3GN41WV0Lodbs.jpg)
+
+Filter 4000 points with a minimum of 250cm between each point:
+![Filtered Points with Minimum Distance](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/pcg-random-filter/uZfWs0UTB2-zJLFRuKeVQx40RAOIy2tHiyroTwTDU.jpg)
+
+## Source Code
+
+For those interested in the source code, here's a snippet of the Random Filter node implementation:
+
+
+```cpp
+// PCGRandomFilterSettings.h
+// Copyright Hitbox Games, LLC. All Rights Reserved.
+
+#pragma once
+
+#include "PCGSettings.h"
+
+#include "PCGRandomFilterSettings.generated.h"
+
+UCLASS(BlueprintType, ClassGroup="Procedural")
+class PCGEXTENSIONS_API UPCGRandomFilterSettings : public UPCGSettings
+{
+	GENERATED_BODY()
+
+public:
+	UPCGRandomFilterSettings();
+
+public:
+	//~Begin UPCGSettings interface
+#if WITH_EDITOR
+	virtual FName GetDefaultNodeName() const override { return FName(TEXT("RandomFilter")); }
+	virtual FText GetDefaultNodeTitle() const override { return NSLOCTEXT("PCGRandomFilterSettings", "NodeTitle", "Random Filter"); }
+	virtual EPCGSettingsType GetType() const override { return EPCGSettingsType::Filter; }
+#endif
+
+protected:
+	virtual TArray<FPCGPinProperties> InputPinProperties() const override { return Super::DefaultPointInputPinProperties(); }
+	virtual TArray<FPCGPinProperties> OutputPinProperties() const override { return Super::DefaultPointOutputPinProperties(); }
+	virtual FPCGElementPtr CreateElement() const override;
+	//~End UPCGSettings interface
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settings", meta = (PCG_Overridable))
+	bool bEnableMaxOutput = false;
+
+	/** Sets the maximum number of points to output */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settings", meta = (ClampMin=0, UIMin=0, EditCondition="bEnableMaxOutput", PCG_Overridable))
+	int32 MaxOutput = 0;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settings", meta = (PCG_Overridable))
+	bool bEnableMinimumDistanceBetweenPoints = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settings", meta = (ClampMin=0, UIMin=0, EditCondition="bEnableMinimumDistanceBetweenPoints", PCG_Overridable))
+	float MinimumDistanceBetweenPoints = 0.f;
+};
+
+class PCGEXTENSIONS_API FPCGRandomFilterElement : public IPCGElement
+{
+protected:
+	virtual bool ExecuteInternal(FPCGContext* Context) const override;
+};
+```
+
+```cpp
+// PCGRandomFilterSettings.cpp
+// Copyright Hitbox Games, LLC. All Rights Reserved.
+
+#include "PCG/Elements/PCGRandomFilterSettings.h"
+
+#include "PCGContext.h"
+#include "Data/PCGPointData.h"
+#include "Data/PCGSpatialData.h"
+#include "Helpers/PCGAsync.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(PCGRandomFilterSettings)
+
+#define LOCTEXT_NAMESPACE "PCGRandomFilterElement"
+
+UPCGRandomFilterSettings::UPCGRandomFilterSettings()
+	: Super()
+{
+	bUseSeed = true;
+}
+
+FPCGElementPtr UPCGRandomFilterSettings::CreateElement() const
+{
+	return MakeShared<FPCGRandomFilterElement>();
+}
+
+bool FPCGRandomFilterElement::ExecuteInternal(FPCGContext* Context) const
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(FPCGRandomFilterElement::Execute)
+
+	const auto Settings = Context->GetInputSettings<UPCGRandomFilterSettings>();
+	check(Settings)
+
+	TArray<FPCGTaggedData> Inputs = Context->InputData.GetInputs();
+	TArray<FPCGTaggedData>& Outputs = Context->OutputData.TaggedData;
+
+	const bool bEnableMaxOutput = Settings->bEnableMaxOutput;
+	const int32 MaxOutput = Settings->MaxOutput;
+	const bool bEnableMinimumDistanceBetweenPoints = Settings->bEnableMinimumDistanceBetweenPoints;
+	const float MinimumDistanceBetweenPoints = Settings->MinimumDistanceBetweenPoints;
+
+	const int Seed = Context->GetSeed();
+
+	// Use implicit capture, since we capture a lot
+	//ProcessPoints(Context, Inputs, Outputs, [&](const FPCGPoint& InPoint, FPCGPoint& OutPoint)
+	for (const FPCGTaggedData& Input : Inputs)
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(FPCGTransformPointsElement::Execute)
+
+		const UPCGSpatialData* SpatialData = Cast<UPCGSpatialData>(Input.Data);
+		FPCGTaggedData& Output = Outputs.Add_GetRef(Input);
+
+		if (!SpatialData)
+		{
+			PCGE_LOG(Error, GraphAndLog, LOCTEXT("InputMissingSpatialData", "Unable to get Spatial data from input"));
+			continue;
+		}
+
+		const UPCGPointData* PointData = SpatialData->ToPointData(Context);
+
+		if (!PointData)
+		{
+			PCGE_LOG(Error, GraphAndLog, LOCTEXT("InputMissingPointData", "Unable to get Point data from input"));
+			continue;
+		}
+
+		const TArray<FPCGPoint>& Points = PointData->GetPoints();
+
+		// Cache the indices of the points we want to check.
+		// We delete points that are confirmed to be out of range
+		TArray<int32> PointIndicesToCheck;
+		PointIndicesToCheck.Reserve(Points.Num());
+		for (int32 i = 0; i < Points.Num(); ++i)
+		{
+			PointIndicesToCheck.Add(i);
+		}
+
+		TSet<int32> SelectedPointIndices;
+		FRandomStream RandomStream(Seed);
+
+		if (bEnableMinimumDistanceBetweenPoints)
+		{
+			const int32 TargetNumOfPoints = bEnableMaxOutput ? FMath::Min(MaxOutput, Points.Num()) : Points.Num();
+
+			while (SelectedPointIndices.Num() < TargetNumOfPoints)
+			{
+				if (PointIndicesToCheck.Num() == 0)
+					break; // Break if we've checked all points
+
+				// Generate a random index to check
+				const int32 RandIndex = RandomStream.RandRange(0, PointIndicesToCheck.Num() - 1);
+				// Get the PointIndex from PointIndicesToCheck using the RandIndex. Then get the point's location.
+				const int32 RandomPointIndexToCheck = PointIndicesToCheck[RandIndex];
+				const FVector RandomCandidatePoint = Points[RandomPointIndexToCheck].Transform.GetLocation();
+
+				bool bIsFarEnough = true;
+				for (const int32 SelectedPointIndex : SelectedPointIndices)
+				{
+					if (SelectedPointIndex == RandomPointIndexToCheck)
+						continue; // Skip if we're comparing the same point
+
+					const FVector& SelectedPoint = Points[SelectedPointIndex].Transform.GetLocation();
+					if (FVector::DistSquared(RandomCandidatePoint, SelectedPoint) < FMath::Square(MinimumDistanceBetweenPoints))
+					{
+						bIsFarEnough = false;
+						break;
+					}
+				}
+
+				// Add the point if it's far enough from its nearest neighbor
+				if (bIsFarEnough || SelectedPointIndices.IsEmpty())
+				{
+					SelectedPointIndices.Add(RandomPointIndexToCheck);
+					PointIndicesToCheck.RemoveAt(RandIndex);
+				}
+				else
+				{
+					PointIndicesToCheck.RemoveAt(RandIndex);
+				}
+			}
+		}
+		else if (bEnableMaxOutput)
+		{
+			// Not filtering by min distance. Just get random points until max output
+			while (SelectedPointIndices.Num() < MaxOutput && SelectedPointIndices.Num() < Points.Num())
+			{
+				const int32 RandIndex = RandomStream.RandRange(0, Points.Num() - 1);
+				SelectedPointIndices.Add(PointIndicesToCheck[RandIndex]);
+			}
+		}
+		else
+		{
+			SelectedPointIndices = TSet(PointIndicesToCheck);
+		}
+
+		// Prepare output data
+		auto OutputData = NewObject<UPCGPointData>();
+		OutputData->InitializeFromData(PointData);
+		TArray<FPCGPoint>& OutputPoints = OutputData->GetMutablePoints();
+		OutputPoints.Reserve(bEnableMinimumDistanceBetweenPoints ? SelectedPointIndices.Num() : Points.Num());
+		Output.Data = OutputData;
+
+		FPCGAsync::AsyncPointProcessing(Context, Points.Num(), OutputPoints, [&](int32 Index, FPCGPoint& OutPoint) -> bool
+			{
+				if (SelectedPointIndices.Contains(Index))
+				{
+					const FPCGPoint& InPoint = Points[Index];
+					OutPoint = InPoint;
+					return true;
+				}
+
+				return false;
+			});
+	}
+
+	return
+	true;
+}
+
+#undef LOCTEXT_NAMESPACE
+```
