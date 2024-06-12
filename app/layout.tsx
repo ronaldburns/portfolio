@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import LocalFont from "next/font/local";
 import { Analytics } from "@/components/analytics";
+import { SpeedInsights } from "@/components/speed-insights";
 
 export const metadata: Metadata = {
   title: {
@@ -66,6 +67,7 @@ export default function RootLayout({
     <html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
       <head>
         <Analytics />
+        <SpeedInsights />
       </head>
       <body
         className={`bg-black ${
