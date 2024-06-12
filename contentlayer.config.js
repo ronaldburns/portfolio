@@ -36,6 +36,10 @@ export const Project = defineDocumentType(() => ({
     date: {
       type: "date",
     },
+    lastModified: {
+      type: "date",
+      required: false,
+    },
     image: {
       type: "string",
       required: false,
