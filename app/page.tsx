@@ -37,8 +37,7 @@ export default function Home() {
       <div className="my-16 text-center animate-fade-in">
         <h2 className="my-4 text-xl text-zinc-300">Engineer, Developer, Designer</h2>
         <h3 className="text-m text-zinc-500 ">
-          10 years of Unreal Engine
-          <br />5 years of Network Operations
+          10 years of Unreal Engine | 5 years of Network Operations
         </h3>
       </div>
     </div>
