@@ -3,7 +3,7 @@ title: Toon Shading - Part 1
 description: Insights into the deferred renderer in Unreal Engine and experimenting with toon shading techniques.
 date: "Feb 2, 2024"
 published: true
-image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/ScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png
+image: https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2FScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png
 ---
 
 ## Exploring the Deferred Renderer in Unreal Engine
@@ -27,19 +27,19 @@ Here are some of the critical passes in the G-Buffer:
   ```c
   const float3 N = GBuffer.WorldNormal;
   ```
-  ![World Normal Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/world-normal-tjJO2J9n99H542gnjrphVK4z7Gx2Hz.png)
+  ![World Normal Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fworld-normal-tjJO2J9n99H542gnjrphVK4z7Gx2Hz.png)
 
 - **View Vector (V)**:
   ```c
   const float3 V = -normalize(mul(float3(ScreenPosition, 1), DFToFloat3x3(PrimaryView.ScreenToWorld)).xyz);
   ```
-  ![View Vector Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/view-vector-jQkIXDX4hLKmwuDUhOO08wm7Dgw5Mu.png)
+  ![View Vector Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fview-vector-jQkIXDX4hLKmwuDUhOO08wm7Dgw5Mu.png)
 
 - **NoV (dot product of View Vector and World Normal)**:
   ```c
   const float NoV = saturate(dot(V, N));
   ```
-  ![NoV Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/NoV-1Du7huk7qoxBlRnDFwLrjKBxYnvjcX.png)
+  ![NoV Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2FNoV-1Du7huk7qoxBlRnDFwLrjKBxYnvjcX.png)
 
 ### Experimenting with Toon Shading
 
@@ -80,25 +80,25 @@ I experimented with overriding the lighting on characters to achieve a toon shad
   ```c
   Lighting.Diffuse = 0;
   ```
-  ![Unlit Mode Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/no-diffuse-lighting-dPuoH9wKLMZp6iGsnVjwnJUyIguSM1.png)
+  ![Unlit Mode Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fno-diffuse-lighting-dPuoH9wKLMZp6iGsnVjwnJUyIguSM1.png)
 
 - **Direct Diffuse Color**:
   ```c
   Lighting.Diffuse = GBuffer.DiffuseColor;
   ```
-  ![Direct Diffuse Color Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/diffuse-color-US6MT0FKPupNHkdzU5qTliGY3LBHBp.png)
+  ![Direct Diffuse Color Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fdiffuse-color-US6MT0FKPupNHkdzU5qTliGY3LBHBp.png)
 
 - **Lambertian Shading**:
   ```c
   Lighting.Diffuse = Diffuse_Lambert(GBuffer.DiffuseColor);
   ```
-  ![Lambertian Shading Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/lambertian_shading_image-nXeA7NcrVVvmAOOgrOlNzplG2XPZz5.png)
+  ![Lambertian Shading Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Flambertian_shading_image-nXeA7NcrVVvmAOOgrOlNzplG2XPZz5.png)
 
 - **Direct Light Color**:
   ```c
   Lighting.Diffuse = AreaLight.FalloffColor;
   ```
-  ![Direct Light Color Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/direct_light_image-nshvCellbRT4VcKLfOsE2F0EV4Qouj.png)
+  ![Direct Light Color Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fdirect_light_image-nshvCellbRT4VcKLfOsE2F0EV4Qouj.png)
 
 Combining these methods, I was able to calculate lighting and shadow edges differently to achieve a cartoon look. Here’s a preview of the final toon shader with outlines and highlights:
 ```c
@@ -108,12 +108,12 @@ Open ScreenShot00082.png
 ScreenShot00082.png
 ```
 
-![Completed Toon Texture](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/ScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png)
+![Completed Toon Texture](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2FScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png)
 
 ### Conclusion
 
 The deferred renderer in Unreal Engine provides a powerful framework for implementing complex shading techniques efficiently. By understanding and utilizing the various G-Buffer passes and modifying the lighting calculations, I was able to create a custom toon shader that offers substantial performance improvements without compromising on visual fidelity.
 
-![Atlas Texture](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/UnrealEditor-Win64-DebugGame_trxfO4Y21w-s1YZQ0LDmSpxvz8Fboyc2pvJHgnGRi.png)
+![Atlas Texture](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2FUnrealEditor-Win64-DebugGame_trxfO4Y21w-s1YZQ0LDmSpxvz8Fboyc2pvJHgnGRi.png)
 
 Stay tuned for more updates and detailed breakdowns of the techniques I used!

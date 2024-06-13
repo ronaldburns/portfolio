@@ -3,7 +3,7 @@ title: Toon Shading - Part 2
 description: Adding Anisotropic Shading
 date: "Feb 6, 2024"
 published: true
-image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/part-2/UnrealEditor-Win64-DebugGame_5qnK05tTL3-O5q9gIqqLRqfDyIC7l6GWQJECZl734.jpg
+image: https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fpart-2/UnrealEditor-Win64-DebugGame_5qnK05tTL3-O5q9gIqqLRqfDyIC7l6GWQJECZl734.jpg
 ---
 
 ## Toon Shading Part 2: Adding Anisotropic Shading in Unreal Engine
@@ -14,7 +14,7 @@ In Part 1, I explored the basics of implementing a toon shader using the deferre
 
 Anisotropic shading is a technique that simulates the directional properties of surfaces, such as hair or brushed metal. Unlike isotropic shading, which treats light uniformly across all directions, anisotropic shading varies based on the surface direction. This variation creates the characteristic streaks seen in hair or metal.
 
-![Anisotropy Example](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/part-2/anisotropy-example-S8b8G1DC4b5jTkUPEfxMfMWURUUCwG.png)
+![Anisotropy Example](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fpart-2/anisotropy-example-S8b8G1DC4b5jTkUPEfxMfMWURUUCwG.png)
 
 ### Implementing Anisotropic Shading
 
@@ -91,6 +91,6 @@ float anisotropicTerm = pow(NoH, roughness) * (pow(ToH, roughness) + pow(BoH, ro
 
 ### Examples of Anisotropic Shading
 
-<video controls autoPlay loop><source src="https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/part-2/UnrealEditor-Win64-DebugGame_Wl5A6BDwAP-S5nlxLOdnz4XYw8I5lDfaxchBXFLWw.mp4" /></video>
-![Example 1](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/part-2/UnrealEditor-Win64-DebugGame_2l4hxzj4Vh-z1VNzOJURjspDDRhhinSK4J3ZOIPzL.jpg)
-![Example 2](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/toon-shading/part-2/UnrealEditor-Win64-DebugGame_JhDYzSL8DE-23S0WJM525cF6YFh7HjOjo4UNjBlXE.jpg)
+<video controls autoPlay loop muted><source src="https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fpart-2/UnrealEditor-Win64-DebugGame_Wl5A6BDwAP-S5nlxLOdnz4XYw8I5lDfaxchBXFLWw.mp4" /></video>
+![Example 1](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fpart-2/UnrealEditor-Win64-DebugGame_2l4hxzj4Vh-z1VNzOJURjspDDRhhinSK4J3ZOIPzL.jpg)
+![Example 2](https://r2-portfolio.ronaldburns.dev/projects%2Ftoon-shading%2Fpart-2/UnrealEditor-Win64-DebugGame_JhDYzSL8DE-23S0WJM525cF6YFh7HjOjo4UNjBlXE.jpg)

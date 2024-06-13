@@ -4,7 +4,7 @@ description: An in-depth showcase of my advanced Gameplay Ability System (GAS) i
 date: "June 12, 2024"
 published: true
 featured: true
-image: https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_EFgsG6QON3-nBFmGl6uYMBLK0tOtDGlOEsEJ48JST.jpg
+image: https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_EFgsG6QON3-nBFmGl6uYMBLK0tOtDGlOEsEJ48JST.jpg
 ---
 
 # Ultimate GAS Showcase: Unleashing the Power of the Gameplay Ability System
@@ -38,7 +38,7 @@ The pistol has four main inputs:
 
 Each of these inputs is mapped to trigger a specific GAS Ability. The pistol's GAS component is loaded upon spawn to ensure it’s ready for action right away.
 
-![Pistol](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_R0lcjwWKOK-20xOZqKlYbbTj7NjgMpctSMwh6IQQs.png)
+![Pistol](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_R0lcjwWKOK-20xOZqKlYbbTj7NjgMpctSMwh6IQQs.png)
 
 ### Target Features
 
@@ -50,20 +50,20 @@ My weapons use a system called **Stat Tag Stack**. This is an array of gameplay 
 
 For testing, I’ve loaded 1 ICE bullet in the chamber and 16 more ICE bullets in the reserve ammo.
 
-![Add Ammo](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_upmPaj7L1v-7YUHUDX2QIAVWg0RoAPW0xSVDabpRp.png)
+![Add Ammo](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_upmPaj7L1v-7YUHUDX2QIAVWg0RoAPW0xSVDabpRp.png)
 
 ## Step 2: Adding Gameplay Abilities
 
 Abilities are added via an **Ability Set**, which is a Data Asset that maps abilities to their input tags. Here, I’m adding the fire ability, chamber, slide, eject chamber, and a passive ability for the reticle. Default Gameplay Effects and Attributes can also be added here, but they aren’t necessary for our pistol.
 
-![Pistol Ability Sets](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_e7yDgwYbpZ-AVYYn8e4PEcveeWjCCiNYjpCsh3KCm.png)
+![Pistol Ability Sets](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_e7yDgwYbpZ-AVYYn8e4PEcveeWjCCiNYjpCsh3KCm.png)
 
 ## Step 3: Input Mappings
 
 Triggering the abilities is made easy with variables for Default Input Mappings and an InputConfig Data Asset. This asset maps an InputAction to a Gameplay Tag, which then triggers the corresponding ability.
 
-![Input Variables](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_0Sk0D3EN95-DtKlMCAIAuWf3ZunPt72tvCXJSP5K0.png)
-![Input Config](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_ZX6NlKxBR5-4f8FLlQnh5zIuAvMvfrzqgeSduAWVs.png)
+![Input Variables](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_0Sk0D3EN95-DtKlMCAIAuWf3ZunPt72tvCXJSP5K0.png)
+![Input Config](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_ZX6NlKxBR5-4f8FLlQnh5zIuAvMvfrzqgeSduAWVs.png)
 
 ## Step 4: Fire Ability Details
 
@@ -71,13 +71,13 @@ Triggering the abilities is made easy with variables for Default Input Mappings 
 
 We start with a timer that limits the weapon’s fire rate. Built-in GE_Cooldowns in GAS aren't suitable for high fire-rate abilities, as they might not handle frames correctly if the fire rate exceeds the game's framerate.
 
-![Fire Rate](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_Vx68ZVPxG2-SzKfcoXUNZcR3L6cxdClp7jteUSL4F.png)
+![Fire Rate](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_Vx68ZVPxG2-SzKfcoXUNZcR3L6cxdClp7jteUSL4F.png)
 
 ### Affording and Committing Abilities
 
 Once the timer triggers a fire event, we double-check if we can "afford" the ability and then commit it. If everything checks out, we begin "local targeting."
 
-![Fire Event](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_EGGWsnQJ2J-eH85xHxStDuWBPlWYBJXWBoSmu6RtR.png)
+![Fire Event](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_EGGWsnQJ2J-eH85xHxStDuWBPlWYBJXWBoSmu6RtR.png)
 
 #### Affording and Committing
 
@@ -86,7 +86,7 @@ Once the timer triggers a fire event, we double-check if we can "afford" the abi
 
 This is configured by a custom **Ability Cost** for Chamber Ammo.
 
-![ChamberAmmo Cost](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_LSXj2bbUo6-OyzBfX9P3hIKPvdKJJ2hoFenKr5jVr.png)
+![ChamberAmmo Cost](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_LSXj2bbUo6-OyzBfX9P3hIKPvdKJJ2hoFenKr5jVr.png)
 
 ```c++
 /// HolodeckAbilityCost_ChamberAmmo.cpp
@@ -131,7 +131,7 @@ void UHolodeckAbilityCost_ChamberAmmo::ApplyCost(const UHolodeckGameplayAbility*
 
 Other costs include checking Reserve Ammo or specific Stat Tag Stack counts.
 
-![Other Costs](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_KaKSlA57cK-A7LpVg9cepip4NzYxGfzMd7Ro7stv6.png)
+![Other Costs](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_KaKSlA57cK-A7LpVg9cepip4NzYxGfzMd7Ro7stv6.png)
 
 ## Gameplay Cues
 
@@ -145,12 +145,12 @@ When the weapon is fired, a "Fire" Gameplay Cue Notify is triggered. This local 
 
 Once the ability is successfully activated and committed, we proceed with post-ability logic. For example, I trigger another ability to rack the slide of the weapon, which plays an animation and sets a Stat Tag Stack. If the slide is held, I skip racking the slide. Currently, I access the slide component directly, but this will be updated to check a Dynamic Tag added when the slide is held.
 
-![Rack Slide](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_g7cAg56q7f-PdiUxQdlSJdgTKgzEDQrOQN1HRNwhy.png)
+![Rack Slide](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_g7cAg56q7f-PdiUxQdlSJdgTKgzEDQrOQN1HRNwhy.png)
 
 ## Projectile Impact
 
 When the projectile hits the target, the server attempts to find the GAS component on the hit actor and apply a Gameplay Effect. This effect can be as simple as damaging the actor or applying a random "elemental" effect. I also use an "Execution Calculation" to handle complex logic, such as checking for a "Weakness" tag on the hit physical material to apply extra damage.
-![Gameplay Effect](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_d2ibcneIH5-IdJTqVWKQ4MedsqkUoYs41wfS9rBSc.png)
+![Gameplay Effect](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_d2ibcneIH5-IdJTqVWKQ4MedsqkUoYs41wfS9rBSc.png)
 
 ##### Gameplay Cue Notifies
 Quick cool thing, gameplay effects can automatically trigger Cue Notifies when an attribute is modified by a specific magnitude. This can automatically trigger the "hit" Cue Notify, spawning blood, sound, and more.
@@ -229,10 +229,10 @@ void UHolodeckHealthSet::PostAttributeChange(const FGameplayAttribute& Attribute
 
 With our AttributeSet now supporting FieldNotify events, we can now create a ViewModel that listens to these events and updates the UI accordingly.
 Open your Widget and add the Attribute Set to the ViewModels. It will automatically show up since we implemented the `INotifyFieldValueChanged` interface.
-![Widget ViewModels](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_aG0F9ywzFa-XbbVpepK9M8s8NNQyi2B5TY5QcHRmn.png)
+![Widget ViewModels](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_aG0F9ywzFa-XbbVpepK9M8s8NNQyi2B5TY5QcHRmn.png)
 
 Now that the ViewModel is setup, we can bind its values to our widget! Here I've bound the Health, MaxHealth, and HealthPercent to the UI. I've also bound the name to a PlayerStateViewModel I made earlier.
-![ViewBindings](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_cBgHncSbb4-XDMo0wvcTmS7GF5xFIYwyRnAMjwEfg.png)
+![ViewBindings](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_cBgHncSbb4-XDMo0wvcTmS7GF5xFIYwyRnAMjwEfg.png)
 
 #### We're not done yet!
 ViewModels don't work like magic. They have to be instantiated and owned by an actor or component. In our case, since it's just the ability set, we can access this AbilitySet from the onwing GAS Component.
@@ -242,11 +242,11 @@ It has two functions you override, `CreateInstance` and `DestroyInstance`.
 `CreateInstance` has two inputs and an output. The two inputs are `ExpectedType`, which is the class of the ViewModel we expect, and `UserWidget` which is the instance of the widget that's requesting the ViewModel.
 The output is the ViewModel instance itself.
 
-![CreateInstance Input](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_ejGeTJAtqj-jFl8Tm1kPfSarbAKkDLnOehmcSLMpi.png)
-![CreateInstance Output](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_PBKtxadWjJ-0LK76bROuXGLfdxYRCC5q5Z7VV8ZJm.png)
+![CreateInstance Input](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_ejGeTJAtqj-jFl8Tm1kPfSarbAKkDLnOehmcSLMpi.png)
+![CreateInstance Output](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_PBKtxadWjJ-0LK76bROuXGLfdxYRCC5q5Z7VV8ZJm.png)
 
 We then just select the ViewModel resolver, and the Widget will be able to get the AbilitySetViewModel, no matter what class you choose.
-![Select ViewModelResolver](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_IRquWE08Di-pG6WWhv4RixxIWZzCFlgFKqtpFWuCt.png)
+![Select ViewModelResolver](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_IRquWE08Di-pG6WWhv4RixxIWZzCFlgFKqtpFWuCt.png)
 
 
 ### Great! We now have a weapon that fires, damages a target, and displays the damage to the player!
@@ -254,20 +254,20 @@ We then just select the ViewModel resolver, and the Widget will be able to get t
 Here's a list of unique things I added to this system, which I wasn't able to include in the article:
 
 Configurable Fire and Player params that drive the firing and the design of the World Space Reticle
-![Fire Params](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_XjykLGBxIe-D79JtS44x7bBQdQIvZYbtoitDJQIZP.png)
+![Fire Params](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_XjykLGBxIe-D79JtS44x7bBQdQIvZYbtoitDJQIZP.png)
 
 WeaponCartridgeDefinition for each element type. These hold WeaponBulletDefinitions. A rifle cartridge holds one bullet, while a shotgun cartridge holds multiple in the array.
-![CartridgeDefinitionHydro](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_1iq6AhPD3y-OS0x30XqNYXXpzQ6XZ7pNnMVizFwJC.png)
+![CartridgeDefinitionHydro](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_1iq6AhPD3y-OS0x30XqNYXXpzQ6XZ7pNnMVizFwJC.png)
 
 WeaponBulletDefinition: holds the damage effect, elemental effect and percentage, bullet size, speed, gravity, and more stats.
-![BulletDefinitionHydro](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_PM2i2Emu3u-Mflhm2sBKgTYlprgXouAgopVlwAykt.png)
+![BulletDefinitionHydro](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_PM2i2Emu3u-Mflhm2sBKgTYlprgXouAgopVlwAykt.png)
 
 ElementDefinition: Holds the elemental effects, name, and details about its color, textures, and more.
-![ElementDefinitionHydro](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_z1XRQkuswm-hUjitkTsCzojTbowKBiLro8ramQ8HO.png)
+![ElementDefinitionHydro](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_z1XRQkuswm-hUjitkTsCzojTbowKBiLro8ramQ8HO.png)
 
 Volumes designed to apply Elemental Effects to the player when they enter them. These are designed to be hidden in the level and props, such as lava flowing from a volcano, or water in a fountain.
 *These are being phased out for physical material hit events, but they're still cool!*
-![Elemental Volumes](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_plhgmFwpO6-GCKkzPzcfcw93yogMM8UJHr62BTHTS.png)
+![Elemental Volumes](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_plhgmFwpO6-GCKkzPzcfcw93yogMM8UJHr62BTHTS.png)
 
 Working towards finger positioning on the VR Grips. This is extremely WIP.
-![Grip Finger Position](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_RCj7vLDyXk-5JjK96nGdsdwl9zpOiQdVxmKGUFHJV.png)
+![Grip Finger Position](https://r2-portfolio.ronaldburns.dev/projects%2Fgameplay-ability-system-example%2FUnrealEditor-Win64-DebugGame_RCj7vLDyXk-5JjK96nGdsdwl9zpOiQdVxmKGUFHJV.png)
