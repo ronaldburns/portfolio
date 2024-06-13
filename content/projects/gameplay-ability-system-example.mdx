@@ -88,6 +88,47 @@ This is configured by a custom **Ability Cost** for Chamber Ammo.
 
 ![ChamberAmmo Cost](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_LSXj2bbUo6-OyzBfX9P3hIKPvdKJJ2hoFenKr5jVr.png)
 
+```c++
+/// HolodeckAbilityCost_ChamberAmmo.cpp
+bool UHolodeckAbilityCost_ChamberAmmo::CheckCost(const UHolodeckGameplayAbility* Ability, const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (auto const ReserveAmmoActor = Cast<IReserveAmmoInterface>(Ability->GetAvatarActorFromActorInfo()))
+	{
+		const int32 AbilityLevel = Ability->GetAbilityLevel(Handle, ActorInfo);
+
+		const float NumStacksReal = Quantity.GetValueAtLevel(AbilityLevel);
+		const int32 NumStacks = FMath::TruncToInt(NumStacksReal);
+		checkf(ReserveAmmoActor->GetChamberCount() <= 1, TEXT("Multiple chambers not yet supported"))
+		const bool bCanApplyCost = ReserveAmmoActor->HasChamberAmmoAt(0); // TODO - Support multiple barrels
+
+		// Inform other abilities why this cost cannot be applied
+		if (!bCanApplyCost && OptionalRelevantTags && FailureTag.IsValid())
+		{
+			OptionalRelevantTags->AddTag(FailureTag);
+		}
+		return bCanApplyCost;
+	}
+
+	return false;
+}
+
+void UHolodeckAbilityCost_ChamberAmmo::ApplyCost(const UHolodeckGameplayAbility* Ability, const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	if (ActorInfo->IsNetAuthority())
+	{
+		if (auto const ReserveAmmoActor = Cast<IReserveAmmoInterface>(Ability->GetAvatarActorFromActorInfo()))
+		{
+			const int32 AbilityLevel = Ability->GetAbilityLevel(Handle, ActorInfo);
+
+			const float NumStacksReal = Quantity.GetValueAtLevel(AbilityLevel);
+			const int32 NumStacks = FMath::TruncToInt(NumStacksReal);
+
+			ReserveAmmoActor->RemoveChamberAmmoAt(0);
+		}
+	}
+}
+```
+
 Other costs include checking Reserve Ammo or specific Stat Tag Stack counts.
 
 ![Other Costs](https://d1nxhf1pnsyhaypz.public.blob.vercel-storage.com/projects/gameplay-ability-system-example/UnrealEditor-Win64-DebugGame_KaKSlA57cK-A7LpVg9cepip4NzYxGfzMd7Ro7stv6.png)
