@@ -1,18 +1,29 @@
 ---
 title: State Tree AI
-description: Experiments and research into using State Tree for AI
+description: In-depth experiments and research into utilizing State Tree for AI in Unreal Engine 5.4
 date: "April 17, 2024"
+lastModified: "June 13, 2024"
 published: true
 image: https://r2-portfolio.ronaldburns.dev/projects%2Fstate-tree-ai%2FUnrealEditor-Win64-DebugGame_x7cjjZDCif-DdtuHD2erjjG2N5rMYWGAQm0tUK69i.png
 ---
 
-## Experimenting with State Tree
+## Experimenting with State Tree AI in Unreal Engine 5.4
 
-I've been testing the limits of state tree, seeing if it's possible to fully drive AI using it.
-I'm very pleased with the results I've achieved.
-With the ability to **finally** output data from a task, and use that data with sibilings, it really opens the gates for what's possible with state tree.
-Not to mention Epic's new EQS Query node. I'm excited to see their implementation of it is the exact same as how I was able to implement it a few months ago.
+I've been testing the limits of State Tree in Unreal Engine 5.4, and the results are fantastic. Finally being able to output data from a task and use it with siblings opens up so many possibilities. Epic's new EQS Query node is also a game-changer, matching what I implemented months ago.
 
+### Key New Features
+  - **Task Output Data:** Share data between sibling tasks, making AI behavior more dynamic.
+  - **EQS Query Node**: Integrate environmental awareness directly into AI logic.
+
+Here's an example of sharing variables between tasks. The EQS Task sets the target location, which the MoveTo task then uses.
+<video controls autoPlay loop muted><source src="https://r2-portfolio.ronaldburns.dev/projects%2Fstate-tree-ai%2FUnrealEditor-Win64-DebugGame_S3Wl5fldTu.mp4" /></video>
+
+### Practical Implementation
+Check out the State Tree setup and how tasks are configured to interact with each other.
 ![State Tree](https://r2-portfolio.ronaldburns.dev/projects%2Fstate-tree-ai%2FUnrealEditor-Win64-DebugGame_x7cjjZDCif-DdtuHD2erjjG2N5rMYWGAQm0tUK69i.png)
 ![Details Panel](https://r2-portfolio.ronaldburns.dev/projects%2Fstate-tree-ai%2FUnrealEditor-Win64-DebugGame_00A6Qov8RI-QG0z84XmpbtbtCFznWXHeLXZLgKlpi.png)
 ![EQS In Action](https://r2-portfolio.ronaldburns.dev/projects%2Fstate-tree-ai%2FUnrealEditor-Win64-DebugGame_AI01OFIGQq-YWxbcCb1iRFAgRwlMSN3uQVzThNzPV.jpg)
+
+State Tree in Unreal Engine 5.4 is proving to be a robust tool for AI development. The ability to handle complex behaviors and integrate environmental queries is impressive. I really hope progress keeps heading in this direction as I'm #teamStateTree all day baby.
+
+For more details, check out [Unreal Engine's State Tree documentation](https://dev.epicgames.com/documentation/en-us/unreal-engine/state-tree-in-unreal-engine).
