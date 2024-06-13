@@ -5,7 +5,6 @@ import { Navigation } from "@/components/navigation";
 import { Card } from "@/components/card";
 import { Article } from "./article";
 import { kv } from "@vercel/kv";
-import { Eye } from "lucide-react";
 import Image from "next/image";
 
 export const revalidate = 60;
@@ -26,12 +25,12 @@ export default async function ProjectsPage() {
   const top2 =
     allProjects.find(
       (project) =>
-        project.slug === "toon-shading-part1" && project.published === true
+        project.slug === "replicated-physics" && project.published === true
     )! ?? allProjects[1];
   const top3 =
     allProjects.find(
       (project) =>
-        project.slug === "nanite-displacement-fade" &&
+        project.slug === "toon-shading-part1" &&
         project.published === true
     )! ?? allProjects[2];
   const sorted = allProjects
