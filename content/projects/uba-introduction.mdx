@@ -1,0 +1,64 @@
+---
+title: Speeding Up Unreal Engine Compiles
+description: A deep dive into how I leveraged Unreal Build Accelerator (UBA) to significantly reduce compile times for modules and shaders in Unreal Engine.
+date: "June 14, 2024 15:30:00 GMT-0700"
+published: true
+image: https://r2-portfolio.ronaldburns.dev/projects%2Fuba-introduction%2FBloKI_zO.png
+---
+
+## Speeding Up Unreal Engine Compiles with Unreal Build Accelerator (UBA)
+
+Unreal Build Accelerator (UBA) is a game-changer for developers working with Unreal Engine, especially when it comes to reducing compile times for large projects. Recently, I integrated UBA into my development workflow, and the results have been nothing short of spectacular. Here’s a detailed account of how I used UBA to vastly improve the compile times of modules and shaders in Unreal Engine.
+
+### The Core Power of UBA
+
+While caching is an exciting new feature, the core power of UBA lies in its ability to distribute compile workloads across all available machines. This distributed compilation significantly speeds up the build process, making it an invaluable tool for large teams and complex projects.
+
+### The Initial Setup
+
+Integrating UBA into my workflow began with a few essential steps:
+- **Installation and Configuration**: Setting up UBA involved installing the accelerator and configuring it to work with my existing build setup.
+- **Distributed Compilation**: Configuring UBA to utilize multiple machines for distributing the compile tasks, thereby speeding up the overall build process.
+- **Caching Mechanism**: Implementing the caching feature to store previously compiled modules and shaders, further enhancing build times for subsequent builds.
+
+### Real-World Results
+
+To give you an idea of the improvements, here are some benchmarks from my experience:
+- **Unreal Editor Win64 Development**: With 100% cache hits, a full rebuild takes under 20 seconds.
+- **UnrealGame PS4 (without linking)**: This process takes around 2 seconds on my machine with complete cache hits.
+
+These numbers are incredible when you consider the scale and complexity of Unreal Engine projects. For comparison, a standard build without UBA could take several minutes or even hours, depending on the project's size.
+
+### Practical Benefits
+
+The primary advantage of using UBA is the significant time savings, especially in environments where multiple developers are preflighting changes. Here’s how UBA makes a difference:
+- **Preflighting Changes**: Multiple machines syncing back and forth can often lead to full invalidations, causing complete rebuilds. With UBA, these rebuilds are minimized to mere seconds.
+- **Incremental Builds**: By leveraging cached data, incremental builds become almost instantaneous, enhancing productivity and reducing downtime.
+
+### Caveats and Workarounds
+
+While UBA offers substantial benefits, there are some caveats to keep in mind:
+- **PCH (Precompiled Header) Dependency**: Sharing a cache requires matching paths when using PCH. If paths don’t match, PCH must be turned off, which can be a limitation.
+- **MS Support for PCH**: Efforts are underway to get fixes from Microsoft to make PCH portable, which would resolve this issue.
+
+### Integrating with Unreal Engine
+
+Here’s a step-by-step guide on how I integrated UBA with Unreal Engine:
+
+1. **Setup UBA Server**: Installed and configured the UBA server to handle the cache and distribute compile tasks.
+2. **Configure Build System**: Modified Unreal Engine's build configuration to point to the UBA server and enable distributed compilation.
+3. **Enable Caching**: Ensured that caching was enabled for both modules and shaders to further optimize build times.
+4. **Monitor and Optimize**: Regularly monitored build times and optimized the cache configuration for maximum efficiency.
+
+### Impact on Development Workflow
+
+The integration of UBA has transformed my development workflow in several ways:
+- **Reduced Wait Times**: Drastically reduced compile times have allowed for quicker iterations and testing.
+- **Enhanced Collaboration**: With faster build times, collaboration with other developers has become more efficient, as everyone benefits from the shared cache and distributed compilation.
+- **Increased Productivity**: The overall productivity boost has been significant, allowing me to focus more on developing features rather than waiting for builds to complete.
+
+### Conclusion
+
+Unreal Build Accelerator is an essential tool for any Unreal Engine developer looking to optimize their workflow and reduce compile times. By leveraging its powerful distributed compilation and caching capabilities, I’ve been able to significantly cut down on build times, enhancing both my productivity and the overall efficiency of my development process.
+
+If you're working with Unreal Engine and haven't yet explored UBA, I highly recommend giving it a try. The time savings and productivity gains are well worth the effort.
