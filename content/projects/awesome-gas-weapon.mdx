@@ -1,0 +1,43 @@
+---
+title: Awesome GAS Weapon
+description: A little bit of what went into getting my GAS VR weapon to work.
+date: "Oct 2, 2023"
+published: true
+---
+
+### Triggering the Input Actions with VR inputs
+
+![1](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor-Win64-DebugGame_j1ZhbDSlkM.png)
+
+### Giving the weapon default ammo
+
+![2](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor-Win64-DebugGame_oTNmRuLt6E.png)
+
+### Binding GameplayAbility activation to GameplayTags, triggered by the previous input actions
+
+![3](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor-Win64-DebugGame_IWXkCjK8Zl.png)
+
+### First time replication finally worked
+
+<video controls autoPlay loop muted><source src="https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FQu2AW9cqFX.mp4" /></video>
+
+### Faking Autonomous Proxy so inputs can work. Didn't work as Simulated Proxy.
+![4](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2Frider64_2x924JOyHH.png)
+
+### Trigger a Dry Fire GameplayCue when firing out of ammo
+![5](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor-Win64-DebugGame_Q72G6hWNat.png)
+
+### Listen for the activation failure of the GameplayAbility and do whatever else is needed, such as playing an out of ammo animation montage on the weapon.
+![6](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor_kcqjYCyWm3.png)
+
+### The C++ code that broadcasts the Message listened to in the previous image
+![7](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2Frider64_wcfiNs8y8C.png)
+
+### UI message displayed upon activation failure
+![8](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor_7nKM1iCHQt.png)
+
+### Instanced Weapon GameplayAbility
+![9](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor_AlZbwuyFPo.png)
+
+### Example GameplayCue triggered
+![10](https://r2-portfolio.ronaldburns.dev/projects%2Fawesome-gas-weapon%2FUnrealEditor-Win64-DebugGame_VUQluoMEER.png)
