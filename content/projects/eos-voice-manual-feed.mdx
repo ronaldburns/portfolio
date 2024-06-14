@@ -1,0 +1,59 @@
+---
+title: EOS Voice Manual Input/Output
+description: Online Subsystem EOS doesn't have any built in way to configure manually inputting and outputting the voice data?!
+date: "June 14, 2024 14:00:00 GMT-0700"
+published: true
+---
+
+## EOS Voice Manual Input/Output
+
+Online Subsystem EOS has no built in way to configure manually inputting and outputting the voice data?!
+You can setup EOS_Lobby_LocalRTCOptions to configure this when creating or joining a lobby.
+Here's how I added it myself.
+
+In the file OnlineSessionEOS.cpp, I added the following code to the function `FOnlineSessionEOS::JoinLobbySession`:
+
+```cpp
+// ...
+JoinLobbyOptions.bPresenceEnabled = Session->SessionSettings.bUsesPresence;
+
+
+#if WITH_EOSVOICECHAT
+			EOS_Lobby_LocalRTCOptions JoinLobbyLocalRTCOptions = { 0 };
+			JoinLobbyLocalRTCOptions.ApiVersion = 1;
+			UE_EOS_CHECK_API_MISMATCH(EOS_LOBBY_LOCALRTCOPTIONS_API_LATEST, 1);
+			JoinLobbyLocalRTCOptions.bUseManualAudioInput = EOS_FALSE;
+			JoinLobbyLocalRTCOptions.bUseManualAudioOutput = EOS_TRUE;
+			JoinLobbyLocalRTCOptions.bLocalAudioDeviceInputStartsMuted = EOS_FALSE;
+ 			JoinLobbyOptions.LocalRTCOptions = &JoinLobbyLocalRTCOptions;
+#endif // WITH_EOSVOICECHAT
+
+
+ 			JoinLobbyOptions.LobbyDetailsHandle = EOSSessionInfo->LobbyHandle->LobbyDetailsHandle;
+// ...
+```
+
+In the same file, edit `FOnlineSessionEOS::CreateLobbySession`
+```cpp
+// ...
+	CreateLobbyOptions.bDisableHostMigration = !bUseHostMigration;
+
+#if WITH_EOS_RTC
+	CreateLobbyOptions.bEnableRTCRoom = Session->SessionSettings.bUseLobbiesVoiceChatIfAvailable;
+
+	/** RONALDBURNS - Enable Manual Audio Output. */
+	EOS_Lobby_LocalRTCOptions CreateLobbyLocalRTCOptions = { 0 };
+	CreateLobbyLocalRTCOptions.ApiVersion = 1;
+	UE_EOS_CHECK_API_MISMATCH(EOS_LOBBY_LOCALRTCOPTIONS_API_LATEST, 1);
+	CreateLobbyLocalRTCOptions.bUseManualAudioInput = EOS_FALSE;
+	CreateLobbyLocalRTCOptions.bUseManualAudioOutput = EOS_TRUE;
+	CreateLobbyLocalRTCOptions.bLocalAudioDeviceInputStartsMuted = EOS_FALSE;
+	
+	CreateLobbyOptions.LocalRTCOptions = &CreateLobbyLocalRTCOptions;
+#endif
+
+	const FTCHARToUTF8 Utf8SessionIdOverride(*Session->SessionSettings.SessionIdOverride);
+// ...
+```
+
+I have these values hard-coded to UseManualAudioOutput, but these will eventually be built into the `FOnlineSessionSettings`, making them easily toggleable by OnlineSubsystem, or even cooler, the **CommonGame** plugin!
