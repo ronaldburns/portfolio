@@ -4,19 +4,19 @@ import { allProjects } from "contentlayer/generated";
 import { Navigation } from "@/components/navigation";
 import { Card } from "@/components/card";
 import { Article } from "./article";
-import { kv } from "@vercel/kv";
 import Image from "next/image";
 
 export const revalidate = 60;
 export default async function ProjectsPage() {
-  const views: Record<string, number> = (
-    await kv.mget<number[]>(
-      ...allProjects.map((p) => ["pageviews", "projects", p.slug].join(":"))
-    )
-  ).reduce((acc, v, i) => {
-    acc[allProjects[i].slug] = v ?? 0;
-    return acc;
-  }, {} as Record<string, number>);
+  // const views: Record<string, number> = (
+  //   await kv.mget<number[]>(
+  //     ...allProjects.map((p) => ["pageviews", "projects", p.slug].join(":"))
+  //   )
+  // ).reduce((acc, v, i) => {
+  //   acc[allProjects[i].slug] = v ?? 0;
+  //   return acc;
+  // }, {});
+  const views: Record<string, number> = {};
 
   const featured =
     allProjects.find(
@@ -30,8 +30,7 @@ export default async function ProjectsPage() {
   const top3 =
     allProjects.find(
       (project) =>
-        project.slug === "toon-shading-part1" &&
-        project.published === true
+        project.slug === "toon-shading-part1" && project.published === true
     )! ?? allProjects[2];
   const sorted = allProjects
     .filter((p) => p.published)
