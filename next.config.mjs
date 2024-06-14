@@ -2,6 +2,7 @@ import { withContentlayer } from "next-contentlayer";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
   experimental: {
     mdxRs: true,
@@ -22,8 +23,8 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "r2-portfolio.ronaldburns.dev"
-      }
+        hostname: "r2-portfolio.ronaldburns.dev",
+      },
     ],
   },
 };
