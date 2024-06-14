@@ -1,6 +1,7 @@
 import type { Project } from "@/.contentlayer/generated";
 import Link from "next/link";
 import { Eye, View } from "lucide-react";
+import Image from "next/image";
 
 type Props = {
   project: Project;
@@ -29,7 +30,7 @@ export const Article: React.FC<Props> = ({ project, views }) => {
           </span> */}
         </div>
         {project.image && (
-          <img
+          <Image
             src={project.image}
             alt={project.title}
             className="mt-4 rounded-md border bg-muted transition-colors"
