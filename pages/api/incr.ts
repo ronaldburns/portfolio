@@ -1,4 +1,3 @@
-import { kv } from "@vercel/kv";
 import { NextRequest, NextResponse } from "next/server";
 
 export default async function incr(req: NextRequest): Promise<NextResponse> {
@@ -30,14 +29,14 @@ export default async function incr(req: NextRequest): Promise<NextResponse> {
 
     // deduplicate the ip for each slug
 
-    const isNew = await kv.set(["deduplicate", hash, slug].join(":"), true, {
+    const isNew = false;/*await kv.set(["deduplicate", hash, slug].join(":"), true, {
       nx: true,
       ex: 24 * 60 * 60,
-    });
+    });*/
     if (!isNew) {
       new NextResponse(null, { status: 202 });
     }
   }
-  await kv.incr(["pageviews", "projects", slug].join(":"));
+  // await kv.incr(["pageviews", "projects", slug].join(":"));
   return new NextResponse(null, { status: 202 });
 }

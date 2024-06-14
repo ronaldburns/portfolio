@@ -4,7 +4,6 @@ import { Mdx } from "@/components/mdx";
 import { Header } from "./header";
 import "./mdx.css";
 import { ReportView } from "./view";
-import { kv } from "@vercel/kv";
 
 export const revalidate = 60;
 
@@ -31,7 +30,7 @@ export default async function PostPage({ params }: Props) {
   }
 
   const views =
-    (await kv.get<number>(["pageviews", "projects", slug].join(":"))) ?? 0;
+    /*(await kv.get<number>(["pageviews", "projects", slug].join(":"))) ??*/ 0;
 
   return (
     <div className="bg-zinc-50 min-h-screen">
