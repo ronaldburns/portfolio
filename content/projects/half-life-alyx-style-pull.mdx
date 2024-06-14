@@ -1,0 +1,302 @@
+---
+title: Crafting a Distance Pull Ability System for VR (WIP)
+description: A distance pull ability system inspired by Half-Life Alyx using Unreal Engine's powerful tools and gameplay systems.
+date: June 13, 2024
+published: true
+---
+
+I'll walk you through the development of a distance pull ability system similar to the one in Half-Life: Alyx. This system is designed to work with VR motion controllers and offers a seamless experience for grabbing objects from a distance.
+
+### Overview
+
+The distance pull ability is added to each motion controller in VR. It calculates the target location based on the player's current position and velocity, then launches the physics object with a large initial force, making small corrections to ensure it lands accurately in the player's hand. During the last 20% of the distance, the system defies physics slightly to guarantee the object reaches the player's hand, maintaining a natural rhythm of distance grabbing.
+
+### Development Challenges
+
+#### Finding the Target Location
+
+One of the initial challenges was accurately finding the target location. This involved calculating the player's position and velocity to predict where the object should be launched.
+
+#### Calculating Initial Impulse
+
+Calculating the initial impulse required to launch the object was another significant challenge. The impulse had to be strong enough to cover the distance but also precise to ensure it lands in the player's hand.
+
+#### Adding Small Impulses
+
+Adding small corrective impulses during the object's flight was crucial for accuracy. These impulses helped adjust the object's trajectory to ensure it reached the intended target, especially in the last 20% of the distance.
+
+### Implementation
+
+It'll be a cold day in hell if you see me not use math nodes. 🥰😍
+![Math Nodes](https://r2-portfolio.ronaldburns.dev/projects%2Fhalf-life-alyx-style-pull%2FUnrealEditor-Win64-DebugGame_fH3sOST8g2.png)
+
+![Live View](https://r2-portfolio.ronaldburns.dev/projects%2Fhalf-life-alyx-style-pull%2Frider64_czJdumkNoQ.png)
+
+Here's the source code for the distance pull ability system:
+
+```c++
+// Copyright Hitbox Games, LLC. All Rights Reserved.
+
+#include "HolodeckGameplayAbility_DistantPull.h"
+
+#include "AbilitySystemComponent.h"
+#include "GripMotionControllerComponent.h"
+#include "Character/HolodeckGripMotionControllerComponent.h"
+
+bool UHolodeckGameplayAbility_DistantPull::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool bResult = Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+
+	// if (bResult)
+	// {
+	// 	// Check if we have a valid actor to pull
+	// 	if (!HighlightedActor)
+	// 	{
+	// 		bResult = false;
+	// 	}
+	// }
+
+	return bResult;
+}
+
+void UHolodeckGameplayAbility_DistantPull::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	// Bind target data callback
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+
+	OnTargetDataReadyCallbackDelegateHandle = MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
+
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+}
+
+void UHolodeckGameplayAbility_DistantPull::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (IsEndAbilityValid(Handle, ActorInfo))
+	{
+		if (ScopeLockCount > 0)
+		{
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			return;
+		}
+
+		UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+		check(MyAbilityComponent);
+
+		// When ability ends, consume target data and remove delegate
+		MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyCallbackDelegateHandle);
+		MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+
+		Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	}
+}
+
+void UHolodeckGameplayAbility_DistantPull::PullTick()
+{
+	bool bPulled = RunPull(CurrentlyPulledComponent.Get(), GetHolodeckMotionControllerFromActorInfo(), FVector::ZeroVector, GravityOverrideZ);
+	if (!bPulled) CancelPull(CurrentlyPulledComponent.Get());
+}
+
+void UHolodeckGameplayAbility_DistantPull::StartPullActorTargeting()
+{
+	check(CurrentActorInfo);
+
+	if (!SelectedActor.IsValid()) return;
+
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+
+	UMotionControllerComponent* PalmMotionController = GetPalmMotionControllerFromActorInfo();
+	check(PalmMotionController);
+
+	FScopedPredictionWindow ScopedPrediction(MyAbilityComponent, CurrentActivationInfo.GetActivationPredictionKey());
+
+	FGameplayAbilityTargetDataHandle TargetData;
+	TargetData.UniqueId = 0;
+
+	const FGameplayAbilityTargetingLocationInfo SourceLocation = MakeTargetLocationInfoFromPrimitiveComponent(PalmMotionController);
+
+	FGameplayAbilityTargetData_ActorArray* NewTargetData = new FGameplayAbilityTargetData_ActorArray();
+	NewTargetData->SourceLocation = SourceLocation;
+	NewTargetData->SetActors({SelectedActor});
+
+	TargetData.Add(NewTargetData);
+
+	OnTargetDataReadyCallback(TargetData, {});
+}
+
+void UHolodeckGameplayAbility_DistantPull::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+{
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+
+	if (const FGameplayAbilitySpec* AbilitySpec = MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
+	{
+		FScopedPredictionWindow ScopedPrediction(MyAbilityComponent);
+
+		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
+		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+
+		if (const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority())
+		{
+			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, MyAbilityComponent->ScopedPredictionKey);
+		}
+
+		bool bIsTargetDataValid = false;
+
+#if WITH_SERVER_CODE
+		if (AController* Controller = GetControllerFromActorInfo())
+		{
+			if (Controller->GetLocalRole() == ROLE_Authority)
+			{
+				for (uint8 i = 0; (i < LocalTargetDataHandle.Num()) && i < 255; ++i)
+				{
+					auto* TargetData_ActorArray = static_cast<FGameplayAbilityTargetData_ActorArray*>(LocalTargetDataHandle.Get(i));
+
+					if (TargetData_ActorArray->GetActors().IsEmpty()) continue;
+
+					auto WeakSelectedActor = TargetData_ActorArray->GetActors()[0];
+					if (!WeakSelectedActor.IsValid()) continue;
+
+					auto StrongSelectedActor = WeakSelectedActor.Pin();
+
+					// For now, just destroy the actor. TODO - Launch the actor towards the player
+					// StrongSelectedActor->Destroy();
+				}
+			}
+		}
+#endif
+
+		if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+		{
+			// Ability commited and activated successfully
+			K2_OnTargetDataReady(LocalTargetDataHandle);
+		}
+	}
+
+	// We've processed the data
+	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+}
+
+bool UHolodeckGameplayAbility_DistantPull::CanPullComponent(const UPrimitiveComponent* Component)
+{
+	if (!Component) return false;
+
+	if (const auto OwningActor = Component->GetOwner(); OwningActor->Implements<UVRGripInterface>())
+	{
+		TArray<FBPGripPair> HoldingControllers;
+		bool bIsHeld = false;
+		IVRGripInterface::Execute_IsHeld(OwningActor, OUT HoldingControllers, OUT bIsHeld);
+
+		return !bIsHeld;
+	}
+
+	return true;
+}
+
+bool UHolodeckGameplayAbility_DistantPull::StartPull(UPrimitiveComponent* Component)
+{
+	if (!CanPullComponent(Component)) return false;
+
+	CurrentlyPulledComponent = Component;
+	Component->SetSimulatePhysics(true);
+
+	Component->OnComponentHit.AddDynamic(this, &ThisClass::OnPulledComponentHit);
+
+	TimeComponentPulled = GetWorld()->GetTimeSeconds();
+
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::PullTick);
+	GetWorld()->GetTimerManager().SetTimer(PullTickTimerHandle, TimerDelegate, 0.01f, true);
+
+	return true;
+}
+
+bool UHolodeckGameplayAbility_DistantPull::RunPull_Implementation(UPrimitiveComponent* ComponentToToss, const UPrimitiveComponent* TargetComponent, const FVector TargetOffset, float OverrideGravityZ)
+{
+	 const UWorld* World = GetWorld();
+    check(World);
+
+    if (!ComponentToToss || !TargetComponent)
+    {
+        return false;
+    }
+
+    const float TimeSinceComponentPulled = World->GetTimeSeconds() - TimeComponentPulled;
+
+    if (TimeSinceComponentPulled >= TimeToTarget)
+    {
+        return false;
+    }
+
+    const FVector ComponentToTossLocation = ComponentToToss->GetComponentLocation();
+    const float LocalTimeToTarget = FMath::Max(TimeToTarget - TimeSinceComponentPulled, 0.1f);
+    const FVector TargetLocation = TargetComponent->GetComponentLocation() + TargetOffset;
+    const FVector TargetVelocity = TargetComponent->GetOwner()->GetVelocity();
+    const FVector PredictedTargetLocation = TargetLocation + TargetVelocity * LocalTimeToTarget;
+
+    // Minimum distance check
+    const float ComponentDistanceToTargetSquared = FVector::DistSquared(ComponentToTossLocation, PredictedTargetLocation);
+    if (ComponentDistanceToTargetSquared < FMath::Square(FloatCancelDistance))
+    {
+        return false;
+    }
+
+    // Get the gravity value from the world
+    const float GravityZ = FMath::IsNearlyZero(OverrideGravityZ) ? World->GetGravityZ() : OverrideGravityZ;
+    const float GravityAbs = FMath::Abs(GravityZ);
+
+    // Calculate the displacement
+    const FVector Displacement = PredictedTargetLocation - ComponentToTossLocation;
+    const float HorizontalDistance = FVector(Displacement.X, Displacement.Y, 0.0f).Size();
+    const float VerticalDisplacement = Displacement.Z;
+
+    // Adjust peak height based on distance
+    const float DesiredPeakHeight = FMath::Max(HorizontalDistance * 0.25f, 50.0f); // Adjust the multiplier and minimum height as needed
+
+    // Calculate the required initial vertical velocity to reach the peak
+    const float TimeToPeak = LocalTimeToTarget / 2.0f;
+    const float InitialVerticalVelocity = (DesiredPeakHeight - VerticalDisplacement + 0.5f * GravityAbs * FMath::Square(TimeToPeak)) / TimeToPeak;
+
+    // Calculate the required initial horizontal velocity
+    const FVector HorizontalVelocity = FVector(Displacement.X, Displacement.Y, 0.0f) / LocalTimeToTarget;
+
+    // Combine horizontal and vertical velocities
+    const FVector OutVelocity = HorizontalVelocity + FVector(0, 0, InitialVerticalVelocity);
+
+    ComponentToToss->SetPhysicsLinearVelocity(OutVelocity, false);
+
+#if ENABLE_DRAW_DEBUG
+    if (bDrawDebug)
+    {
+        DrawDebugLine(World, ComponentToTossLocation, PredictedTargetLocation, FColor::Green, false, 10.0, 0, 0.1);
+        DrawDebugLine(World, ComponentToTossLocation, ComponentToTossLocation + HorizontalVelocity, FColor::Red, false, 10.0, 0, 0.1);
+        DrawDebugLine(World, ComponentToTossLocation, ComponentToTossLocation + FVector(0, 0, InitialVerticalVelocity), FColor::Blue, false, 10.0, 0, 0.1);
+        // Draw a small diamond at the predicted target location
+        DrawDebugSphere(World, PredictedTargetLocation, 4.0f, 4, FColor::Green, false, 10.0, 0, 0.5);
+    }
+#endif
+
+    return true;
+}
+
+void UHolodeckGameplayAbility_DistantPull::CancelPull(UPrimitiveComponent* HitComponent)
+{
+	if (HitComponent)
+	{
+		HitComponent->OnComponentHit.RemoveDynamic(this, &ThisClass::OnPulledComponentHit);
+	}
+
+	if (PullTickTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PullTickTimerHandle);
+		PullTickTimerHandle.Invalidate();
+	}
+
+	CurrentlyPulledComponent = nullptr;
+}
+
+void UHolodeckGameplayAbility_DistantPull::OnPulledComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	CancelPull(HitComponent);
+}
+```
