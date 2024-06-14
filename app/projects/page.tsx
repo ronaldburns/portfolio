@@ -30,7 +30,7 @@ export default async function ProjectsPage() {
   const top3 =
     allProjects.find(
       (project) =>
-        project.slug === "toon-shading-part1" && project.published === true
+        project.slug === "elemental-volumes" && project.published === true
     )! ?? allProjects[2];
   const sorted = allProjects
     .filter((p) => p.published)
