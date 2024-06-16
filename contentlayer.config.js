@@ -55,6 +55,10 @@ export const Project = defineDocumentType(() => ({
       default: false,
       required: false,
     },
+    tags: {
+      type: "string",
+      required: false,
+    },
   },
   computedFields,
 }));
