@@ -1,7 +1,11 @@
 {
 	// Cloudflare Workers — static assets deployment for the Astro build.
 	// Deploy with: npm run build && npx wrangler deploy
+	// account_id is pinned to the PERSONAL Cloudflare account so a deploy with
+	// the wrong credentials (e.g. a work token) fails loudly instead of
+	// silently targeting another account.
 	"name": "ronaldburns-portfolio",
+	"account_id": "33fc9793762d56a51f2a7c125becd482",
 	"compatibility_date": "2026-06-19",
 	"assets": {
 		"directory": "./dist"
