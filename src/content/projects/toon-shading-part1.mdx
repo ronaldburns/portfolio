@@ -1,0 +1,126 @@
+---
+title: Toon Shading - Part 1
+description: Insights into the deferred renderer in Unreal Engine and experimenting with toon shading techniques.
+date: "Feb 2, 2024"
+published: true
+image: projects/toon-shading/ScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png
+---
+
+## Exploring the Deferred Renderer in Unreal Engine
+
+I've been exploring Unreal Engine's deferred renderer, especially as I started experimenting with adding a toon shader. The deferred renderer in Unreal Engine is fascinating and offers numerous possibilities for rendering high-quality visuals efficiently. Let’s dive into how it works and my findings from implementing a toon shader.
+
+### Understanding the Deferred Renderer
+
+Deferred rendering is a technique used in Unreal Engine to handle complex lighting scenarios efficiently. Unlike forward rendering, which computes lighting for each object as it is rendered, deferred rendering separates the rendering process into two main stages:
+
+1. **G-Buffer Pass**: During this stage, the material properties of all visible objects are rendered into several textures called G-Buffers. These include information such as world normals, diffuse color, specular color, and depth.
+2. **Lighting Pass**: In this stage, lighting calculations are applied to the G-Buffer data to produce the final image.
+
+This method allows for a high number of dynamic lights and complex shading models without a significant performance hit.
+
+### Key G-Buffer Passes
+
+Here are some of the critical passes in the G-Buffer:
+
+- **World Normal**:
+  ```c
+  const float3 N = GBuffer.WorldNormal;
+  ```
+
+<Img src="projects/toon-shading/world-normal-tjJO2J9n99H542gnjrphVK4z7Gx2Hz.png" alt="World Normal Example" />
+
+- **View Vector (V)**:
+  ```c
+  const float3 V = -normalize(mul(float3(ScreenPosition, 1), DFToFloat3x3(PrimaryView.ScreenToWorld)).xyz);
+  ```
+
+<Img src="projects/toon-shading/view-vector-jQkIXDX4hLKmwuDUhOO08wm7Dgw5Mu.png" alt="View Vector Example" />
+
+- **NoV (dot product of View Vector and World Normal)**:
+  ```c
+  const float NoV = saturate(dot(V, N));
+  ```
+
+<Img src="projects/toon-shading/NoV-1Du7huk7qoxBlRnDFwLrjKBxYnvjcX.png" alt="NoV Example" />
+
+### Experimenting with Toon Shading
+
+I aimed to implement a toon shader without relying on post-process effects or using custom depth as a mask. Instead, I used material IDs to better control which objects should receive toon shading. Here’s a breakdown of my approach:
+
+#### Deferred Light Pass
+
+The main function for the deferred light pass is `DeferredLightPixelMain()`, located in the `DeferredLightPixelShaders.usf` file. This function is responsible for calculating dynamic lighting using various helper functions.
+
+```c
+// DeferredLightPixelShaders.usf
+void DeferredLightPixelMain(
+#if LIGHT_SOURCE_SHAPE > 0
+  float4 InScreenPosition : TEXCOORD0,
+#else
+  float2 ScreenUV         : TEXCOORD0,
+  float3 ScreenVector     : TEXCOORD1,
+#endif
+  // [...]
+)
+{
+  const float2 PixelPos = SVPos.xy;
+  OutColor = 0;
+  // [...]
+  float SurfaceShadow = 1.0f;
+  float4 LightAttenuation = GetLightAttenuationFromShadow(InputParams, SceneDepth);
+  float4 Radiance = GetDynamicLighting(DerivedParams.TranslatedWorldPosition, DerivedParams.CameraVector, ScreenSpaceData.GBuffer, ScreenSpaceData.AmbientOcclusion, ScreenSpaceData.GBuffer.ShadingModelID, LightData, LightAttenuation, Dither, uint2(InputParams.PixelPos), SurfaceShadow);
+  OutColor += Radiance;
+  // [...]
+}
+```
+
+### Modifying Lighting for Toon Shading
+
+I experimented with overriding the lighting on characters to achieve a toon shading effect:
+
+- **Unlit Mode**:
+  ```c
+  Lighting.Diffuse = 0;
+  ```
+
+<Img src="projects/toon-shading/no-diffuse-lighting-dPuoH9wKLMZp6iGsnVjwnJUyIguSM1.png" alt="Unlit Mode Example" />
+
+- **Direct Diffuse Color**:
+  ```c
+  Lighting.Diffuse = GBuffer.DiffuseColor;
+  ```
+
+<Img src="projects/toon-shading/diffuse-color-US6MT0FKPupNHkdzU5qTliGY3LBHBp.png" alt="Direct Diffuse Color Example" />
+
+- **Lambertian Shading**:
+  ```c
+  Lighting.Diffuse = Diffuse_Lambert(GBuffer.DiffuseColor);
+  ```
+
+<Img src="projects/toon-shading/lambertian_shading_image-nXeA7NcrVVvmAOOgrOlNzplG2XPZz5.png" alt="Lambertian Shading Example" />
+
+- **Direct Light Color**:
+  ```c
+  Lighting.Diffuse = AreaLight.FalloffColor;
+  ```
+
+<Img src="projects/toon-shading/direct_light_image-nshvCellbRT4VcKLfOsE2F0EV4Qouj.png" alt="Direct Light Color Example" />
+
+Combining these methods, I was able to calculate lighting and shadow edges differently to achieve a cartoon look. Here’s a preview of the final toon shader with outlines and highlights:
+```c
+Lighting.Diffuse = Diffuse_Lambert(GBuffer.DiffuseColor);
+Lighting.Diffuse *= AreaLight.FalloffColor * (Falloff * saturate(floor((NoL) / 0.0001 /*max(0.0001f, GBuffer.CustomData.a)*/)));
+Open ScreenShot00082.png
+ScreenShot00082.png
+```
+
+<Img src="projects/toon-shading/ScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png" alt="Completed Toon Texture" />
+
+### Conclusion
+
+The deferred renderer in Unreal Engine provides a powerful framework for implementing complex shading techniques efficiently. By understanding and utilizing the various G-Buffer passes and modifying the lighting calculations, I was able to create a custom toon shader that offers substantial performance improvements without compromising on visual fidelity.
+
+<Img src="projects/toon-shading/UnrealEditor-Win64-DebugGame_trxfO4Y21w-s1YZQ0LDmSpxvz8Fboyc2pvJHgnGRi.png" alt="Atlas Texture" />
+
+Stay tuned for more updates and detailed breakdowns of the techniques I used!

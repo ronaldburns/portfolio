@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import Img from '../components/Img.astro';
+
+type Props = CollectionEntry<'projects'>['data'];
+
+const { title, description, date, lastModified, image, url, repository } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} image={image} />
+	</head>
+	<body>
+		<Header />
+		<main class="max-w-3xl mx-auto px-4 py-12">
+			<article>
+				<header class="mb-8">
+					<p class="text-sm text-zinc-500">
+						<FormattedDate date={date} />
+						{lastModified && <span> · updated <FormattedDate date={lastModified} /></span>}
+					</p>
+					<h1 class="font-display text-3xl sm:text-4xl text-zinc-100 mt-2">{title}</h1>
+					<p class="text-zinc-400 mt-3">{description}</p>
+					{
+						(url || repository) && (
+							<div class="flex gap-4 mt-4 text-sm">
+								{url && (
+									<a href={url} target="_blank" rel="noopener" class="text-indigo-300 underline">
+										Live →
+									</a>
+								)}
+								{repository && (
+									<a href={repository} target="_blank" rel="noopener" class="text-indigo-300 underline">
+										Repository →
+									</a>
+								)}
+							</div>
+						)
+					}
+					{image && <Img src={image} alt={title} loading="eager" class="mt-6" />}
+				</header>
+				<div class="content">
+					<slot />
+				</div>
+			</article>
+			<a href="/" class="inline-block mt-12 text-sm text-zinc-400 hover:text-white">← All projects</a>
+		</main>
+		<Footer />
+	</body>
+</html>

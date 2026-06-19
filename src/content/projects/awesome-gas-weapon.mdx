@@ -1,0 +1,51 @@
+---
+title: Awesome GAS Weapon
+description: A little bit of what went into getting my GAS VR weapon to work.
+date: "Oct 2, 2023"
+published: true
+---
+
+### Triggering the Input Actions with VR inputs
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor-Win64-DebugGame_j1ZhbDSlkM.png" alt="1" />
+
+### Giving the weapon default ammo
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor-Win64-DebugGame_oTNmRuLt6E.png" alt="2" />
+
+### Binding GameplayAbility activation to GameplayTags, triggered by the previous input actions
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor-Win64-DebugGame_IWXkCjK8Zl.png" alt="3" />
+
+### First time replication finally worked
+
+<Video src="projects/awesome-gas-weapon/Qu2AW9cqFX.mp4" />
+
+### Faking Autonomous Proxy so inputs can work. Didn't work as Simulated Proxy.
+
+<Img src="projects/awesome-gas-weapon/rider64_2x924JOyHH.png" alt="4" />
+
+### Trigger a Dry Fire GameplayCue when firing out of ammo
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor-Win64-DebugGame_Q72G6hWNat.png" alt="5" />
+
+### Listen for the activation failure of the GameplayAbility and do whatever else is needed, such as playing an out of ammo animation montage on the weapon.
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor_kcqjYCyWm3.png" alt="6" />
+
+### The C++ code that broadcasts the Message listened to in the previous image
+
+<Img src="projects/awesome-gas-weapon/rider64_wcfiNs8y8C.png" alt="7" />
+
+### UI message displayed upon activation failure
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor_7nKM1iCHQt.png" alt="8" />
+
+### Instanced Weapon GameplayAbility
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor_AlZbwuyFPo.png" alt="9" />
+
+### Example GameplayCue triggered
+
+<Img src="projects/awesome-gas-weapon/UnrealEditor-Win64-DebugGame_VUQluoMEER.png" alt="10" />
+

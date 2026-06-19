@@ -1,0 +1,132 @@
+---
+title: Holodeck Dev Update - 02/2023
+description: Holodeck Developer Update log for February 2023.
+date: "Feb 22, 2023"
+published: true
+image: projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_E9bRNDxyvG-pX5X2wxGyziGkEMSevLNGWoupZ0xpW.png
+---
+
+## What is Holodeck?
+
+Holodeck is a social VR game designed to offer immersive, interactive experiences. Players can explore various environments, interact with objects, and engage with other players in a fully realized virtual space. My focus is on creating a seamless and engaging virtual world that combines the best aspects of gaming and social interaction.
+
+## Grip and Pose Component
+
+One of the latest features we've integrated into Holodeck is the Grip and Pose component for grippable actors. This component allows for precise snap-gripping, where you can position the component exactly where you want the snap-grip to occur. Moreover, you can also position the fingers, which will automatically translate to any avatar using both IK (Inverse Kinematics) and FK (Forward Kinematics).
+
+If a finger pose is not set, the fingers will try to automatically align to the surface of the model. This feature ensures that the hand interactions feel natural and realistic. Here's an image showing two grip poses on a blue barrel:
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_ydPR1UXLap-69tOW1jk9zILM9d6HEvT6jd6EhYDha.png" alt="Grip Poses on a Blue Barrel" />
+
+## Multiple Physical Materials on a Single Object
+
+I've been working on implementing multiple Physical Materials on a single object to enhance the realism of interactions. For example, I created a traffic cone with a high-friction, high-density rubber base, making it top-heavy and sticky, so it adheres to surfaces realistically. Conversely, the blue plastic jug is lightweight with low friction, allowing it to fall off surfaces easily.
+
+Here are two videos demonstrating this feature:
+
+- traffic cone without physical materials
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_VAvZ1O2Wxb-ztfwsx37SwBofnSddqdMTHW4eIrM3g.mp4" />
+
+- traffic cone and barrel with correct physical materials
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_rMBsANON1s-xseVffg2bbsQ7cBkxuej1FzJH0v3GB.mp4" />
+
+### Animations
+
+The animation system in Holodeck has seen significant updates. I've set up an animation layer system that tailors animations based on the player's attributes, such as gender and whether they are armed or unarmed. Additionally, I'm using a ControlRig system to implement FootIK, ensuring the feet accurately align with the ground.
+
+-
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor_oa1kyDW9nE-SPfegYS6KtIMtXLj2VdP7xchmeYEmK.mp4" />
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_v4KUF4tzsq-9U1JLukbvwCEx3obR2Qqn7UzfM5PjS.png" alt="Foot IK Traces" />
+
+I've also been experimenting with the new "Foot Placement" anim node, which helps lock the feet in place during animations.
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_pML88FKWue-uQnIs79YHKSfJCn15G1hkKIjMxEDnx.png" alt="Foot Placement Node" />
+
+### Lumen Global Illumination
+
+Lumen Global Illumination is a game-changer for VR. After some extensive work, Lumen now works beautifully in VR, offering stunning lighting effects. This technology is perfect for creating atmospheric environments, such as dark interiors in horror games.
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_NNxzWa62su-31Ad8nBR5rx2ew7D608zSfR7KG7LkJ.jpg" alt="No Shadows Example Image" />
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_mT6rwVqeMY-7viO87ZqjpdUJ3pLCSGHgxt22dhGAK.jpg" alt="No Lumen Example Image" />
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_ReXfJ1TMyF-riWRsEzHJw7YMFC2kZU9EKad4t4Fwd.jpg" alt="Lumen Example Image" />
+
+-
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor_vcXoMhMfJZ-YveTaJ4y34phEgdBB4qPAEd3ddXcDN.mp4" />
+
+Lumen allows for excellent lighting quality without compromising on performance. Here are some comparison images to show the dramatic difference Lumen makes:
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_CNIeOulUZx-ZooqdxB6WxN2Sqczbl8Wjb8bFztyNW.jpg" alt="Old Lighting Image" />
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor_Ky9vAs85ve-UIWLXauX1XKfzadldFZ80MvNN6jQ48.jpg" alt="Lumen Interior Image" />
+
+One crucial aspect I've learned is the importance of accurate mesh distance fields for high-quality Lumen GI. Accurate mesh distance fields also enable particle systems to use these for collision detection, enhancing realism.
+
+- Scene
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_H6RspPLeht-QFLYFunz1extEHEeYzjbY3mcoyONyp.jpg" alt="Scene Image" />
+
+- Lumen Scene
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_zOBwgo16lj-aXTtue43z1rckUGynscYNvcH8x3Qm9.jpg" alt="Lumen Scene Image" />
+
+- Mesh Distance Field Preview
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_UJ7bN0FeV8-VXa5h1qKWawENjpqLytLE5NYST3n8M.jpg" alt="Mesh Distance Field Preview" />
+
+- Particle collision
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_N1GFE5LTSR-laQgutUfisGZ0B9tJaUt5jgCGkIvpF.mp4" />
+
+### Nanite Tessellation
+
+Nanite has been enabled on all static objects in the scene, and I'm experimenting with tessellation. The results are impressive, particularly in VR, where the depth perception enhances the effect of displaced meshes.
+
+-
+
+<Img src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_TP7lUysPU0-bY0Gw5J4aiGR1N8PkhpifcG4DGWH4C.jpg" alt="Flat vs Displaced Mesh Example Image" />
+
+- Nanite Overdraw
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_SV6uKhhncH-29oYhJe1juZylRn8pCqFi00bHYWunD.mp4" />
+
+### IK Rig
+
+IK Rig is a powerful tool for real-time retargeting. I've created some simple rigs to explore its capabilities. Setting up the bone settings for the spine, arms, and legs is essential for accurate results. Otherwise, the FullBodyIK solver may not work correctly.
+-
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_9jfzXw4LSZ-ppucpuSX5BumvUfWcNtuFPqV8a76Jy.mp4" />
+
+### Kawaii Physics
+
+Kawaii Physics is an excellent plugin for achieving toon-style physics simulations within the animation graph.
+
+- Physics Simulation
+
+<Video src="projects/holodeck-update-2-2023/UnrealEditor-Win64-DebugGame_wbz0kbwf44-46g6N7gdCsHFLtutq4ARYPNk8duW1a.mp4" />
+
+- In-Editor Physics Setup Preview
+
+<Video src="projects/holodeck-update-2-2023/T57L21HDOw-Fxr7UaNc3ujKZhTuyTwG5xE0aHILK9.mp4" />
+
+Stay tuned for more updates as I continue to develop and refine Holodeck!

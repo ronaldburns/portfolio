@@ -1,0 +1,33 @@
+---
+title: State Tree AI
+description: In-depth experiments and research into utilizing State Tree for AI in Unreal Engine 5.4
+date: "April 17, 2024"
+lastModified: "June 13, 2024"
+published: true
+image: projects/state-tree-ai/UnrealEditor-Win64-DebugGame_x7cjjZDCif-DdtuHD2erjjG2N5rMYWGAQm0tUK69i.png
+---
+
+## Experimenting with State Tree AI in Unreal Engine 5.4
+
+I've been testing the limits of State Tree in Unreal Engine 5.4, and the results are fantastic. Finally being able to output data from a task and use it with siblings opens up so many possibilities. Epic's new EQS Query node is also a game-changer, matching what I implemented months ago.
+
+### Key New Features
+  - **Task Output Data:** Share data between sibling tasks, making AI behavior more dynamic.
+  - **EQS Query Node**: Integrate environmental awareness directly into AI logic.
+
+Here's an example of sharing variables between tasks. The EQS Task sets the target location, which the MoveTo task then uses.
+
+<Video src="projects/state-tree-ai/UnrealEditor-Win64-DebugGame_S3Wl5fldTu.mp4" />
+
+### Practical Implementation
+Check out the State Tree setup and how tasks are configured to interact with each other.
+
+<Img src="projects/state-tree-ai/UnrealEditor-Win64-DebugGame_x7cjjZDCif-DdtuHD2erjjG2N5rMYWGAQm0tUK69i.png" alt="State Tree" />
+
+<Img src="projects/state-tree-ai/UnrealEditor-Win64-DebugGame_00A6Qov8RI-QG0z84XmpbtbtCFznWXHeLXZLgKlpi.png" alt="Details Panel" />
+
+<Img src="projects/state-tree-ai/UnrealEditor-Win64-DebugGame_AI01OFIGQq-YWxbcCb1iRFAgRwlMSN3uQVzThNzPV.jpg" alt="EQS In Action" />
+
+State Tree in Unreal Engine 5.4 is proving to be a robust tool for AI development. The ability to handle complex behaviors and integrate environmental queries is impressive. I really hope progress keeps heading in this direction as I'm #teamStateTree all day baby.
+
+For more details, check out [Unreal Engine's State Tree documentation](https://dev.epicgames.com/documentation/en-us/unreal-engine/state-tree-in-unreal-engine).

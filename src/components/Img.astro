@@ -1,0 +1,27 @@
+---
+// Drop-in image component / markdown <img> override.
+// Accepts a relative R2 key ("projects/slug/file.png") or any URL.
+// Serves through Cloudflare Image Transformations when enabled (see consts.ts).
+import { imageUrl, srcSet } from '../lib/images';
+
+interface Props {
+	src: string;
+	alt?: string;
+	width?: number;
+	class?: string;
+	loading?: 'lazy' | 'eager';
+}
+
+const { src, alt = '', width, class: className, loading = 'lazy' } = Astro.props;
+const sizes = '(max-width: 720px) 100vw, 720px';
+---
+
+<img
+	src={imageUrl(src, width)}
+	srcset={srcSet(src)}
+	sizes={srcSet(src) ? sizes : undefined}
+	alt={alt}
+	loading={loading}
+	decoding="async"
+	class={`rounded-lg border border-zinc-800 my-6 mx-auto ${className ?? ''}`}
+/>

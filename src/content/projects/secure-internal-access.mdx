@@ -1,0 +1,59 @@
+---
+title: "Secure Access without a VPN"
+date: "Nov 11 2022"
+description: "How I used HashiCorp Boundary to securely access internal tools without the need for a VPN."
+published: true
+---
+
+## Secure Internal Tool Access without a VPN
+
+As a network operations expert, one of my key responsibilities is to ensure that my team can access internal tools and resources securely. Traditionally, VPNs have been the go-to solution for this purpose. However, VPNs can be cumbersome, introduce latency, and are not always the most secure or flexible option. This is where HashiCorp Boundary comes in, revolutionizing how we access internal tools without the need for a VPN.
+
+### Discovering HashiCorp Boundary
+
+HashiCorp Boundary is an identity-based secure access management tool that provides a simple and secure way to access internal systems. Boundary works by creating a secure tunnel from the internal application directly to your client. This setup allows developers to access servers, internal APIs, logs, and much more without the overhead and security risks associated with traditional VPNs.
+
+<Video src="projects/secure-internal-access/boundary-desktop_1.5.0__jAW42ucDgc-A6IWt4wsiYl32j0dNXohDHWbvJTiFg.mp4" />
+
+### Why I Chose Boundary
+
+I was looking for a solution that would:
+- **Improve Security**: Eliminate the risks associated with VPN credentials and reduce the attack surface.
+- **Enhance User Experience**: Provide seamless access to internal tools without the need for VPN setup and maintenance.
+- **Ensure Flexibility**: Allow access from anywhere without being tied to a specific VPN endpoint.
+- **Simplify Management**: Make it easy to manage access permissions and audit access logs.
+
+### Setting Up Boundary
+
+Setting up HashiCorp Boundary was straightforward and aligned perfectly with our zero-trust infrastructure approach. Here’s how I went about it:
+
+1. **Deployment**: I deployed Boundary on our existing cloud infrastructure. Boundary supports various deployment methods, including Docker, Kubernetes, and traditional virtual machines. I opted for a Docker-based deployment for ease of setup and management.
+
+2. **Authentication**: Boundary integrates with various identity providers like Okta, GitHub, and LDAP. This allowed me to leverage our existing identity provider to authenticate users seamlessly.
+
+3. **Configuration**: I configured Boundary to create secure sessions for accessing our internal tools. This included setting up roles and permissions, defining target resources, and configuring session limits.
+
+4. **Access**: Once set up, team members could authenticate via Boundary and access the required resources through a secure tunnel. This process was much simpler and faster than connecting through a VPN.
+
+### Benefits of Using Boundary
+
+Using HashiCorp Boundary has brought several benefits:
+
+- **Enhanced Security**: By eliminating the need for VPN credentials and providing session-based access, Boundary significantly enhances our security posture. Each session is encrypted, and access is tightly controlled and audited.
+- **Improved User Experience**: Developers can now access internal tools with a few clicks, without the need for VPN software. This has streamlined our workflow and increased productivity.
+- **Flexible Access**: Boundary's identity-based access means team members can securely connect from anywhere, at any time, without being restricted to specific VPN endpoints.
+- **Simplified Management**: Managing access permissions and auditing access logs is much simpler with Boundary. I can easily add or remove users, assign roles, and review access logs.
+
+### Real-World Applications
+
+Here's how Boundary has improved our operations:
+
+- **Accessing Servers**: Developers can securely SSH into servers without exposing them to the public internet.
+- **Internal APIs**: We can securely access internal APIs and services, ensuring that only authenticated and authorized users can connect.
+- **Logs and Monitoring**: Boundary allows us to securely access log files and monitoring tools, providing visibility into our systems without compromising security.
+
+### Conclusion
+
+HashiCorp Boundary has transformed how we access internal tools, providing a secure, flexible, and user-friendly alternative to traditional VPNs. If you're looking to enhance your security posture and simplify access management, I highly recommend giving Boundary a try.
+
+For more details on HashiCorp Boundary, you can check out the [official documentation](https://www.hashicorp.com/products/boundary).

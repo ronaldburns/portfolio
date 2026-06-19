@@ -1,0 +1,61 @@
+---
+title: Integrating Holodeck API and Social Services into Unreal Engine
+description: Detailed guide on integrating a custom API and social services into Unreal Engine
+date: "July 20, 2022"
+published: true
+image: projects/holodeck-social-services-part-1/vlc_A2m9d4nykd.png
+---
+
+## Integrating My API and Social Services into Unreal Engine
+
+I've been working on an exciting integration project, bringing together my backend API and social services with Unreal Engine. The backend is built using:
+
+- NestJS
+- Postgres
+- Redis
+
+To facilitate this, I'm developing a custom SDK plugin for the Holodeck API in Unreal Engine. This SDK handles a variety of tasks including authentication, fetching user data, fetching friends lists, and more. Let's dive into the details of how this integration is taking shape.
+
+### API and SDK Overview
+
+The first component I focused on was fetching user data by ID. For this, I developed an HTTP module that queues up HTTP requests and executes them synchronously. The responses, returned as JSON, are then parsed into struct/object types for use within Unreal Engine. Check this out – it’s awesome.
+
+<Video src="projects/holodeck-social-services-part-1/UnrealEditor_xKFq0ONUBm.mp4" />
+
+### Fetching Connected Accounts
+
+Next, I added the capability to fetch third-party connected accounts for users. For instance, our user "Phresh" on Holodeck has linked his Steam account under the name "Phreshtex." Here's a demo of how that looks in action.
+
+<Video src="projects/holodeck-social-services-part-1/UnrealEditor_25kFX0PaLW.mp4" />
+
+### Fetching Mutual Friends
+
+One of the coolest features I implemented is the ability to fetch mutual friends with a specific user. This allows for a more connected and interactive social experience within Holodeck.
+
+<Img src="projects/holodeck-social-services-part-1/UnrealEditor_We6oBd2krh.png" alt="Mutual Friends" />
+
+### Implementation Details
+
+#### HTTP Module
+
+The HTTP module is a crucial part of the integration, ensuring smooth communication between Unreal Engine and the API. It handles all HTTP requests, ensuring they are processed in order and without delay.
+
+#### JSON Parsing
+
+Once the HTTP responses are received, they are parsed into appropriate struct/object types. This conversion is essential for utilizing the data within Unreal Engine, making it easy to manage and display user information.
+
+#### Authentication
+
+Handling authentication securely and efficiently is a top priority. The SDK manages user sessions and tokens, ensuring that each request is authenticated properly without compromising performance or security.
+
+### Future Developments
+
+There's still a lot more to come. I'm planning to expand the SDK with more features, including:
+
+- Enhanced friend management tools
+- Real-time notifications and updates
+- More extensive social integrations
+
+This integration project is a significant step forward, enhancing the capabilities of Holodeck and providing users with a richer, more connected experience.
+
+Stay tuned for more updates!

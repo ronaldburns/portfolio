@@ -1,0 +1,85 @@
+---
+title: Holodeck Dev Update - 03/2023
+description: Holodeck Developer Update log for March 2023.
+date: "March 30, 2023"
+published: true
+image: projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_vleJcnNI2J-exA6KiJpAz4NgfJiyQyhVYRyGeQPD4.png
+---
+
+## Accurate Physics Simulation
+
+### Chaos Physics System
+
+Work continues on refining the physics simulation within Holodeck, with a focus on using the Chaos physics system. Chaos handles mass very well, but I've encountered an issue when placing a lot of weight on a light object, such as a table. Here's a demonstration:
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_vwD37q2BzK-rythjYLtaXfpqm08nPwKErKJuB6vQp.mp4" />
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_DgDFi3AxqS-1QHCPKkNsnvA6XGBxuy4kLU647qZcc.mp4" />
+
+Another challenge I'm facing is with collision detection in objects composed of multiple hulls. Currently, objects tend to glitch in-between the hulls, causing unstable physics interactions.
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_SDAqwNiZlz-MDse5EYQQUa2EFeu19liHtsrUIsuJz.mp4" />
+
+### Rendering Glitches Without a Landscape
+
+The absence of a landscape in our scenes is causing a severe rendering glitch. Unreal Engine appears to misinterpret all pixels as out-of-bounds when there's no landscape present. This leads to significant visual issues, such as the disappearance of roughness and world normal passes.
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_Jz4ZHDpAtf-r7zbFNaE5L26W6A59Rkpvbdq02hXDV.mp4" />
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_8DbdMCdZWS-vygwnhuwnl7vPVVBVSYIbif6vBzVkl.mp4" />
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_TBYP84Ff5A-6qcLUCsWE9nzFvNyAmtfxtFw9bVQLw.mp4" />
+
+### Performance in Nanite Scenes
+
+Performance is decent with a fully populated Nanite scene, including foliage. Here are some visuals of the scene and its performance:
+
+-
+
+<Img src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_lfKSN9H72H-kaXN0RXRSB3dHQrnGmAbySEN1JxiRi.jpg" alt="Scene Image" />
+
+-
+
+<Img src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_8J1UJB8SBu-qAOwfRrGmV3cO1xBls0Zq6O1oDEkF7.jpg" alt="Nanite debug of scene" />
+
+I've managed to get Nanite working in VR, which is a significant milestone:
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_7t4CWstkTR-G1k073ketwSVzDrvtWb7M6GkM2s17Q.mp4" />
+
+However, Nanite foliage with World Position Offset (WPO) wasn't outputting correctly to the velocity buffer, causing severe artifacts. Setting `r.Velocity.EnableVertexDeformation` resolves this issue.
+
+-
+
+<Video src="projects/holodeck-update-3-2023/UnrealEditor-Win64-DebugGame_XZVCw8TMwj-WX1bvJvzAlflzgOPUjQj7iOlZ17HV7.mp4" />
+
+### Baking Textures to Vertex Color
+
+With the high number of vertices in Nanite meshes, I'm exploring the possibility of eliminating most, if not all, textures in our materials for simple objects. In this example, I baked the albedo to the vertex color and used simple math to approximate basic roughness and specular maps. The result is both promising and highly performant.
+
+-
+
+<Img src="projects/holodeck-update-3-2023/UnrealEditor_UEHNl1lMYo-8rRK5eYQHNjahDl5oiPNNUHacR9rCg.png" alt="Vertex Color Material" />
+
+-
+
+<Img src="projects/holodeck-update-3-2023/UnrealEditor_9svtqUV3jr-3c2Owde1pwaF31djecFwNcrTw7xFh8.png" alt="Shader Performance View" />
+
+-
+
+<Img src="projects/holodeck-update-3-2023/UnrealEditor_pV0vrGeq2N-FF6qacR4TrDl8qeZD2mC0R7heRqmgo.png" alt="In Game View" />
+
+Stay tuned for more updates as I continue to push the boundaries of VR development in Holodeck!

@@ -1,0 +1,94 @@
+---
+title: Elemental Volumes
+description: In-depth details on the development of Elemental Volumes, their gameplay effects, visuals, and how they interact with the player and combine into other gameplay effects.
+date: "June 14, 2024"
+published: true
+image: projects/elemental-volumes/UnrealEditor-Win64-DebugGame_vphe4lwNct.png
+---
+
+## Elemental Volumes
+
+I developed Elemental Volumes to serve as a core gameplay mechanic, designed to provide unique effects based on the element they represent. These volumes interact dynamically with players, adding depth and strategy to the gameplay experience.
+Let's explore the intricacies of Elemental Volumes, their integration with Gameplay Effects in Unreal Engine, and their overall impact on gameplay!
+
+### Overview
+
+Elemental Volumes are visually distinctive and data-driven, with each volume representing a different element such as fire, water, or ice. When a player interacts with these volumes, various gameplay effects are triggered, enhancing immersion and strategy.
+
+Key Features:
+- **Data-Driven**: Shape, color, name, and effects are driven by an ElementDefinition Data Asset.
+- **Gameplay Effects**: Effects are applied upon player interaction, such as entering or exiting a volume.
+- **Elemental Interactions**: Combining different elemental volumes can create new effects, like fire and water creating steam, which also impacts the player.
+
+Check out this video demonstrating Elemental Volumes in action:
+
+<Video src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_Pn7E6I3ShI.mp4" />
+
+Being data driven, they're super easy to modify.
+
+<Video src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_pyjDfE9bsm.mp4" />
+
+### Element Definition
+
+Each element is defined using an ElementDefinition data asset, which includes:
+
+- **Name**
+- **Duration Gameplay Effect**: Defines temporary effects when a player interacts with the volume.
+- **Infinite Gameplay Effect**: Defines permanent or continuous effects.
+- **Scalar Parameters**: Numerical values that can modify the element's properties.
+- **Color Parameters**: Determines the visual color representation.
+- **Texture Parameters**: Applies specific textures to the volume.
+
+Here’s an example of a Water ElementDefinition:
+
+<Img src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_081vXx8OSo.png" alt="Water ElementDefinition" />
+
+These attributes are easily accessible using helper-functions in a Blueprint Library.
+
+<Img src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_MHIilMglx4.png" alt="ElementDefinition Blueprint Library" />
+
+### Gameplay Effects in Unreal Engine
+
+Gameplay Effects are a powerful feature in Unreal Engine, allowing developers to apply a wide range of effects such as damage, healing, and buffs or debuffs. These effects are managed by the Gameplay Ability System (GAS), which provides a robust framework for defining, applying, and managing effects in a game.
+
+#### Creating Gameplay Effects
+
+To create Gameplay Effects for each element, I define the specific attributes and behaviors. For instance, a Fire Gameplay Effect might include:
+- **Damage Over Time (DoT)**
+- **Increased Temperature**
+- **Combining Effects**: Interaction with water to create steam, which could also freeze the player upon cooling.
+
+<Img src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_dC18R2QCvU.png" alt="Fire Gameplay Effect" />
+
+#### Applying Gameplay Effects
+
+Applying Gameplay Effects is straightforward:
+1. **Load the Effect**: Ensure the desired effect is loaded.
+2. **Apply the Effect**: Use `ApplyGameplayEffectToSelf` on the authority, letting GAS handle the application process.
+
+This method ensures that the effects are managed efficiently, with GAS handling damage, effect duration, and any interactions or overrides with other effects.
+
+<Img src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_VnDOWEGPZ5.png" alt="Apply Gameplay Effect" />
+
+### Use Cases for Elemental Volumes
+
+Elemental Volumes can be placed in various locations to enhance gameplay:
+- **Lava Pit**: Placing a volume over a lava pit to give the player the fire or lava elemental effect.
+- **Water Stream**: Positioning volumes in streams or water fountains to apply water effects.
+- **Environmental Traps**: Hidden volumes that players can stumble upon, adding layers of strategy and caution.
+
+### Gameplay Tags and GAS Integration
+
+One of the coolest aspects of this system is how seamlessly gameplay tags integrate with the rest of GAS. For example, if a player gets hit with both water and ice elements, they'll enter a "Frozen" state. This is indicated by the `GameplayEffect.Element.Status.Frozen` gameplay tag added to the actor.
+
+#### Tag Relationship Mapping
+
+Using my tag relationship mapping data asset, these tags can easily block or cancel abilities:
+- **Blocking Movement**: The Frozen tag can cancel and block player movement abilities.
+- **Disabling Weapons**: If the Ability System is attached to a weapon, the Frozen tag can prevent the weapon from firing.
+
+<Img src="projects/elemental-volumes/UnrealEditor-Win64-DebugGame_oNbxdmgwwK.png" alt="Example Image" />
+
+### Diverse Use Cases
+
+These elements and their interactions are **not** limited to these volumes. They're also used in the ammunition system, where bullets can have a random chance of applying specific elemental effects. All the interactions work the exact same since they're just using Gameplay Effects. This is really awesome suff!!!

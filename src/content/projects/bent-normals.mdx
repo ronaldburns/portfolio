@@ -1,0 +1,77 @@
+---
+title: Bent Normals and Ambient Occlusion
+description: Leveraging Unreal Engine 5.4's Modeling tools to create Bent Normals and Ambient Occlusion for superior shading on static meshes, with a focus on weapon models.
+date: "February 16, 2024"
+published: true
+image: projects/bent-normals/UnrealEditor-Win64-DebugGame_OTgmg3BOq2.jpg
+---
+
+## Enhancing Static Mesh Shading with Bent Normals and Ambient Occlusion in Unreal Engine 5.4
+
+In this blog post, I'll dive into the process of using Unreal Engine 5.4's powerful modeling tools to generate Bent Normals and Ambient Occlusion (AO) for static meshes. These techniques significantly improve the shading quality, particularly for intricate models like weapons.
+
+### Understanding Bent Normals and Ambient Occlusion
+
+**Bent Normals** are a variation of normal maps that consider the surrounding geometry to create a more accurate depiction of light and shadow interaction. Unlike regular normal maps that only consider the surface normal, bent normals also factor in occluded areas, leading to more realistic shading.
+
+**Ambient Occlusion (AO)** is a shading method used to calculate how exposed each point in a scene is to ambient lighting. It enhances the depth and realism of the rendered objects by simulating the soft shadows that occur in crevices, folds, and areas where objects are close together.
+
+### Using Unreal Engine 5.4's Modeling Tools
+
+Unreal Engine 5.4 introduces advanced modeling tools that make it easier to generate Bent Normals and AO maps directly within the editor. Here's how you can utilize these tools to enhance your static meshes:
+
+#### Step-by-Step Guide
+
+1. **Import Your Static Mesh**
+   First, import your static mesh into Unreal Engine. For this example, we'll use a detailed weapon model.
+
+2. **Open the Modeling Tools**
+   Navigate to the Modeling Tools within Unreal Engine. You can find these tools under the "Modeling" tab in the main toolbar.
+
+3. **Generate Bent Normals**
+   - Select your static mesh and open the Bent Normals generation tool.
+   - Configure the settings to match the complexity and detail of your mesh. Higher-resolution meshes might require more detailed settings to capture the nuances.
+   - Generate the Bent Normals map. This map will consider the geometry's occlusions and create normals that reflect the true light interaction.
+
+4. **Generate Ambient Occlusion**
+   - With your mesh still selected, open the Ambient Occlusion generation tool.
+   - Adjust the settings to determine the occlusion radius and intensity. These parameters control how pronounced the AO effect will be.
+   - Generate the AO map. This map will provide the soft shadowing effect that enhances depth and realism.
+
+5. **Apply the Maps to Your Material**
+   - Open the material editor for your static mesh.
+   - Import the Bent Normals and AO maps you generated.
+   - Connect the Bent Normals map to the normal input of your material.
+   - Multiply the AO map with your base color or use it to influence the roughness or metallic properties of your material.
+
+### Example: Improving Weapon Models
+
+Let's see how these techniques can be applied to a weapon model:
+
+#### Before Applying Bent Normals and AO
+
+<Img src="projects/bent-normals/UnrealEditor-Win64-DebugGame_BuMNa5fYVX.png" alt="Before" />
+
+#### After Applying Bent Normals and AO
+
+<Img src="projects/bent-normals/UnrealEditor-Win64-DebugGame_OTgmg3BOq2.jpg" alt="After" />
+
+In the "after" image, notice how the Bent Normals provide a more accurate depiction of light, especially around the crevices and detailed parts of the weapon. The AO map adds depth by simulating realistic soft shadows in areas where parts of the weapon are close together.
+
+### Challenges and Tips
+
+**Challenges:**
+- **Balancing Detail and Performance:** High-resolution Bent Normals and AO maps can be resource-intensive. Balance the level of detail with performance needs.
+- **Fine-Tuning Settings:** Achieving the perfect settings for Bent Normals and AO may require some experimentation. Adjust the parameters incrementally and preview the results frequently.
+
+**Tips:**
+- **Use High-Resolution Meshes:** For best results, use high-resolution meshes when generating Bent Normals and AO maps.
+- **Combine Techniques:** Combine Bent Normals and AO with other shading techniques like specular and roughness maps for even more realistic results.
+
+### Conclusion
+
+Using Unreal Engine 5.4's modeling tools to generate Bent Normals and Ambient Occlusion maps can dramatically improve the shading quality of your static meshes. By following the steps outlined in this post, you can achieve more realistic and immersive visuals, especially for detailed models like weapons. Experiment with the settings and find the perfect balance for your project to take full advantage of these powerful techniques.
+
+**Further Reading:**
+- [Unreal Engine Documentation](https://docs.unrealengine.com/5.4/en-US/)
+- [Bent Normals and Ambient Occlusion](https://example.com/article-bent-normals-ao)

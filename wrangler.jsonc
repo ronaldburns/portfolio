@@ -1,0 +1,9 @@
+{
+	// Cloudflare Workers — static assets deployment for the Astro build.
+	// Deploy with: npm run build && npx wrangler deploy
+	"name": "ronaldburns-portfolio",
+	"compatibility_date": "2026-06-19",
+	"assets": {
+		"directory": "./dist"
+	}
+}

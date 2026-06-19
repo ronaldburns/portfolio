@@ -1,0 +1,35 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE, SOCIALS } from '../consts';
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={`Contact · ${SITE_TITLE}`} description="Get in touch with Ronald Burns." />
+	</head>
+	<body>
+		<Header />
+		<main class="max-w-3xl mx-auto px-4 py-12">
+			<h1 class="font-display text-4xl text-zinc-100">Contact</h1>
+			<p class="text-zinc-400 mt-3">Reach me anywhere below.</p>
+			<div class="grid gap-4 sm:grid-cols-2 mt-8">
+				{
+					SOCIALS.map((s) => (
+						<a
+							href={s.href}
+							target="_blank"
+							rel="noopener"
+							class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 hover:border-zinc-700 transition-colors"
+						>
+							<div class="text-2xl font-display text-zinc-100">{s.handle}</div>
+							<div class="text-sm text-zinc-500 mt-1">{s.label}</div>
+						</a>
+					))
+				}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

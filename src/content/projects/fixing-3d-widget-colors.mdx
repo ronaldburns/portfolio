@@ -1,0 +1,54 @@
+---
+title: Fixing 3D Widget Colors
+description: Applying a material to all stereo widgets to fix the color errors.
+date: "Jan 16, 2024"
+published: true
+image: projects/fixing-3d-widget-colors/Casting_dBEMCuMU68-V22hPqKU3unfchKkMKfBobHUvYwOu1.png
+---
+
+## Fixing 3D Widget Colors in Unreal Engine
+
+When working with 3D widgets in Unreal Engine, you might notice that their colors often appear incorrect and oversaturated. This issue arises due to the way Unreal Engine processes colors, transitioning from Linear to sRGB during the final frame processing. Since 3D widgets are rendered directly in sRGB, the engine ends up applying an sRGB to sRGB conversion, leading to color inaccuracies.
+
+### Understanding the Issue
+
+Unreal Engine handles color spaces meticulously to ensure accurate color representation. Typically, textures and materials are authored in Linear space, and the engine converts them to sRGB for final output. However, 3D widgets are an exception—they are rendered in sRGB space by default. Consequently, during the final frame processing, the engine mistakenly converts these already sRGB colors, resulting in incorrect and oversaturated visuals.
+
+### The Solution: sRGB to Linear Conversion
+
+To fix this issue, you need to manually convert the colors of your 3D widgets from sRGB to Linear space within the material. This conversion allows Unreal Engine to handle the colors correctly during the final processing step.
+
+Here's how you can implement this fix:
+
+1. **Open the Material Editor** for your 3D widget material.
+2. **Locate the Color Input**: Identify the color input that is causing the oversaturation issue.
+3. **Add the sRGB to Linear Conversion Node**: Use the `sRGB to Linear` conversion node to adjust the colors.
+
+<Img src="projects/fixing-3d-widget-colors/Casting_dBEMCuMU68-V22hPqKU3unfchKkMKfBobHUvYwOu1.png" alt="Comparison" />
+
+*Corrected (left) - Original (right)*
+
+### Step-by-Step Guide
+
+#### 1. Open the Material Editor
+
+Navigate to the Content Browser, find your 3D widget material, and double-click to open it in the Material Editor.
+
+#### 2. Locate the Color Input
+
+Identify the specific color input or texture sample that is displaying the incorrect colors. This is typically the base color or emissive color input.
+
+#### 3. Add the sRGB to Linear Conversion Node
+
+- In the Material Editor, right-click to bring up the context menu.
+- Search for and add the `sRGB to Linear` conversion node.
+- Connect your original color input to the `sRGB to Linear` node.
+- Connect the output of the `sRGB to Linear` node to the color input (e.g., base color or emissive color) of your material.
+
+Here is a visual representation of how your material nodes should look after the conversion:
+
+```
+Original Color Input -> sRGB to Linear Node -> Material Color Input
+```
+
+This setup ensures that the colors are correctly converted from sRGB to Linear before the engine processes them for final rendering.

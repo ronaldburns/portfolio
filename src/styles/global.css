@@ -1,0 +1,117 @@
+@import 'tailwindcss';
+
+:root {
+	color-scheme: dark;
+}
+
+html {
+	font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+	background-color: #09090b; /* zinc-950 */
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	color: #d4d4d8; /* zinc-300 */
+	background-image: radial-gradient(
+		60% 50% at 50% 0%,
+		rgba(39, 39, 42, 0.5),
+		transparent 70%
+	);
+}
+
+a {
+	color: #e4e4e7;
+	text-decoration: none;
+}
+a:hover {
+	color: #fff;
+}
+
+/* Display font for headings/branding (kept from the old site). */
+@font-face {
+	font-family: 'CalSans';
+	src: url('/fonts/CalSans-SemiBold.ttf') format('truetype');
+	font-weight: 600;
+	font-display: swap;
+}
+.font-display {
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+}
+
+/* --- Rendered MDX content ------------------------------------------------ */
+.content {
+	line-height: 1.7;
+	font-size: 1.05rem;
+}
+.content > * + * {
+	margin-top: 1.1em;
+}
+.content h1,
+.content h2,
+.content h3 {
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	color: #fafafa;
+	line-height: 1.2;
+	margin-top: 1.8em;
+}
+.content h2 {
+	font-size: 1.6rem;
+}
+.content h3 {
+	font-size: 1.3rem;
+}
+.content a {
+	color: #a5b4fc; /* indigo-300 */
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.content ul,
+.content ol {
+	padding-left: 1.4em;
+}
+.content ul {
+	list-style: disc;
+}
+.content ol {
+	list-style: decimal;
+}
+.content blockquote {
+	border-left: 3px solid #3f3f46;
+	padding-left: 1em;
+	color: #a1a1aa;
+	font-style: italic;
+}
+.content code {
+	font-family: ui-monospace, 'Cascadia Code', monospace;
+	font-size: 0.9em;
+	background: #18181b;
+	border: 1px solid #27272a;
+	border-radius: 4px;
+	padding: 0.1em 0.35em;
+}
+.content pre {
+	background: #18181b;
+	border: 1px solid #27272a;
+	border-radius: 8px;
+	padding: 1em;
+	overflow-x: auto;
+}
+.content pre code {
+	background: none;
+	border: none;
+	padding: 0;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

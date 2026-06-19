@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Img from '../components/Img.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+
+const posts = (await getCollection('projects'))
+	.filter((p) => p.data.published !== false)
+	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="max-w-3xl mx-auto px-4 py-12">
+			<section class="mb-12">
+				<h1 class="font-display text-4xl sm:text-5xl text-zinc-100">{SITE_TITLE}</h1>
+				<p class="text-zinc-400 mt-3 max-w-xl">{SITE_DESCRIPTION}</p>
+			</section>
+			<ul class="grid gap-5 sm:grid-cols-2">
+				{
+					posts.map((post) => (
+						<li class="group rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden hover:border-zinc-700 transition-colors">
+							<a href={`/projects/${post.id}/`} class="block h-full">
+								{post.data.image && (
+									<div class="aspect-video overflow-hidden bg-zinc-900">
+										<Img
+											src={post.data.image}
+											alt={post.data.title}
+											width={640}
+											class="!my-0 !border-0 !rounded-none w-full h-full object-cover"
+										/>
+									</div>
+								)}
+								<div class="p-4">
+									<p class="text-xs text-zinc-500">
+										<FormattedDate date={post.data.date} />
+									</p>
+									<h2 class="font-display text-lg text-zinc-100 mt-1 group-hover:text-white">
+										{post.data.title}
+									</h2>
+									<p class="text-sm text-zinc-400 mt-1 line-clamp-2">{post.data.description}</p>
+								</div>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>

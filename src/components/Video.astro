@@ -1,0 +1,24 @@
+---
+// Video component. Accepts a relative R2 key or any URL.
+// Videos are served straight from R2 — Cloudflare Transformations do not
+// process video, so there is nothing to optimize at this layer.
+import { originalUrl } from '../lib/images';
+
+interface Props {
+	src: string;
+	controls?: boolean;
+}
+
+const { src, controls = true } = Astro.props;
+---
+
+<video
+	controls={controls}
+	autoplay
+	loop
+	muted
+	playsinline
+	class="w-full rounded-lg border border-zinc-800 my-6"
+>
+	<source src={originalUrl(src)} />
+</video>

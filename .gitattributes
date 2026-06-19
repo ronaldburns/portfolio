@@ -1,6 +1,0 @@
-.js text=auto eol=lf
-.jsx text=auto eol=lf
-.mdx text=auto eol=lf
-.tsx text=auto eol=lf
-.ts text=auto eol=lf
-*.jpg binary
