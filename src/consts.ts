@@ -4,6 +4,17 @@ export const SITE_TITLE = 'Ronald Burns';
 export const SITE_DESCRIPTION =
 	'Game, graphics, and infrastructure engineering — projects and dev logs by Ronald Burns.';
 
+// Used in the home hero, author meta, and JSON-LD structured data.
+export const AUTHOR = 'Ronald Burns';
+export const ROLE = 'Gameplay, graphics & infrastructure engineer';
+export const BIO =
+	'Gameplay programmer at Mob Entertainment. I build game systems, engine tooling, shaders, and the infrastructure that ships them. This is where I log what I work on.';
+
+// Fallback social-share image for pages without their own (home, contact).
+// Any R2 key or absolute URL.
+export const DEFAULT_OG_IMAGE =
+	'projects/toon-shading/ScreenShot00010-NRkAFWGxGGumdLcFcpg3KKHQdYAX6Q.png';
+
 // --- Image handling -------------------------------------------------------
 // Media lives in Cloudflare R2, served through the custom domain below.
 // Cloudflare Image Transformations (enabled per-zone in the dashboard:

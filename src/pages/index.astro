@@ -5,53 +5,94 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Img from '../components/Img.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, AUTHOR, ROLE, BIO, SOCIALS } from '../consts';
 
 const posts = (await getCollection('projects'))
 	.filter((p) => p.data.published !== false)
-	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+	// featured first, then by date
+	.sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: AUTHOR,
+	jobTitle: 'Gameplay Programmer',
+	worksFor: { '@type': 'Organization', name: 'Mob Entertainment' },
+	url: 'https://ronaldburns.dev',
+	sameAs: SOCIALS.filter((s) => s.href.startsWith('http')).map((s) => s.href),
+};
 ---
 
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — ${ROLE}`} description={SITE_DESCRIPTION} />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 	</head>
 	<body>
 		<Header />
-		<main class="max-w-3xl mx-auto px-4 py-12">
-			<section class="mb-12">
-				<h1 class="font-display text-4xl sm:text-5xl text-zinc-100">{SITE_TITLE}</h1>
-				<p class="text-zinc-400 mt-3 max-w-xl">{SITE_DESCRIPTION}</p>
-			</section>
-			<ul class="grid gap-5 sm:grid-cols-2">
-				{
-					posts.map((post) => (
-						<li class="group rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden hover:border-zinc-700 transition-colors">
-							<a href={`/projects/${post.id}/`} class="block h-full">
-								{post.data.image && (
-									<div class="aspect-video overflow-hidden bg-zinc-900">
-										<Img
-											src={post.data.image}
-											alt={post.data.title}
-											width={640}
-											class="!my-0 !border-0 !rounded-none w-full h-full object-cover"
-										/>
-									</div>
-								)}
-								<div class="p-4">
-									<p class="text-xs text-zinc-500">
-										<FormattedDate date={post.data.date} />
-									</p>
-									<h2 class="font-display text-lg text-zinc-100 mt-1 group-hover:text-white">
-										{post.data.title}
-									</h2>
-									<p class="text-sm text-zinc-400 mt-1 line-clamp-2">{post.data.description}</p>
-								</div>
+		<main class="max-w-3xl mx-auto px-4">
+			<section class="py-16 sm:py-20 border-b border-zinc-800/80">
+				<h1 class="font-display text-4xl sm:text-6xl text-zinc-50">{AUTHOR}</h1>
+				<p class="text-amber-400/90 mt-3 text-lg">{ROLE}</p>
+				<p class="text-zinc-400 mt-5 max-w-xl leading-relaxed">{BIO}</p>
+				<div class="flex flex-wrap gap-x-5 gap-y-2 mt-6 text-sm">
+					{
+						SOCIALS.map((s) => (
+							<a
+								href={s.href}
+								target={s.href.startsWith('http') ? '_blank' : undefined}
+								rel="noopener"
+								class="text-zinc-400 hover:text-amber-400 transition-colors"
+							>
+								{s.label} <span class="text-zinc-600">·</span> {s.handle}
 							</a>
-						</li>
-					))
-				}
-			</ul>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="py-12">
+				<h2 class="font-display text-sm uppercase tracking-widest text-zinc-500 mb-6">
+					Projects &amp; dev logs
+				</h2>
+				<ul class="grid gap-5 sm:grid-cols-2">
+					{
+						posts.map((post) => (
+							<li class="group relative rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden hover:border-amber-400/40 hover:bg-zinc-900/70 transition-colors">
+								<a href={`/projects/${post.id}/`} class="block h-full">
+									{post.data.image && (
+										<div class="aspect-video overflow-hidden bg-zinc-900">
+											<Img
+												src={post.data.image}
+												alt={post.data.title}
+												width={640}
+												class="!my-0 !border-0 !rounded-none w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+											/>
+										</div>
+									)}
+									<div class="p-4">
+										<div class="flex items-center gap-2">
+											<p class="text-xs text-zinc-500">
+												<FormattedDate date={post.data.date} />
+											</p>
+											{post.data.featured && (
+												<span class="text-[10px] uppercase tracking-wider text-amber-400 border border-amber-400/30 rounded px-1.5 py-0.5">
+													Featured
+												</span>
+											)}
+										</div>
+										<h3 class="font-display text-lg text-zinc-100 mt-1 group-hover:text-white">
+											{post.data.title}
+										</h3>
+										<p class="text-sm text-zinc-400 mt-1 line-clamp-2">{post.data.description}</p>
+									</div>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
 		</main>
 		<Footer />
 	</body>

@@ -2,12 +2,15 @@
 
 :root {
 	color-scheme: dark;
+	--accent: #fb923c; /* amber-400, nod to the old site's orange */
+	--accent-soft: #fdba74;
 }
 
 html {
 	font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
 	background-color: #09090b; /* zinc-950 */
 	scroll-behavior: smooth;
+	-webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -15,10 +18,11 @@ body {
 	min-height: 100vh;
 	color: #d4d4d8; /* zinc-300 */
 	background-image: radial-gradient(
-		60% 50% at 50% 0%,
-		rgba(39, 39, 42, 0.5),
+		60% 50% at 50% -10%,
+		rgba(251, 146, 60, 0.06),
 		transparent 70%
 	);
+	background-repeat: no-repeat;
 }
 
 a {
@@ -26,6 +30,11 @@ a {
 	text-decoration: none;
 }
 a:hover {
+	color: #fff;
+}
+
+::selection {
+	background: rgba(251, 146, 60, 0.3);
 	color: #fff;
 }
 
@@ -38,34 +47,47 @@ a:hover {
 }
 .font-display {
 	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	letter-spacing: -0.01em;
 }
 
 /* --- Rendered MDX content ------------------------------------------------ */
 .content {
-	line-height: 1.7;
+	line-height: 1.75;
 	font-size: 1.05rem;
+	color: #d4d4d8;
 }
 .content > * + * {
-	margin-top: 1.1em;
+	margin-top: 1.15em;
 }
 .content h1,
 .content h2,
-.content h3 {
+.content h3,
+.content h4 {
 	font-family: 'CalSans', var(--font-atkinson), sans-serif;
 	color: #fafafa;
-	line-height: 1.2;
-	margin-top: 1.8em;
+	line-height: 1.25;
+	margin-top: 2em;
+	scroll-margin-top: 5rem;
 }
 .content h2 {
-	font-size: 1.6rem;
+	font-size: 1.7rem;
+	border-bottom: 1px solid #27272a;
+	padding-bottom: 0.3em;
 }
 .content h3 {
 	font-size: 1.3rem;
 }
+.content h4 {
+	font-size: 1.1rem;
+}
 .content a {
-	color: #a5b4fc; /* indigo-300 */
+	color: var(--accent-soft);
 	text-decoration: underline;
-	text-underline-offset: 2px;
+	text-underline-offset: 3px;
+	text-decoration-thickness: 1px;
+}
+.content a:hover {
+	color: var(--accent);
 }
 .content ul,
 .content ol {
@@ -77,31 +99,75 @@ a:hover {
 .content ol {
 	list-style: decimal;
 }
+.content li::marker {
+	color: #71717a;
+}
 .content blockquote {
-	border-left: 3px solid #3f3f46;
+	border-left: 3px solid var(--accent);
 	padding-left: 1em;
 	color: #a1a1aa;
 	font-style: italic;
 }
-.content code {
+.content hr {
+	border: none;
+	border-top: 1px solid #27272a;
+	margin: 2.5em 0;
+}
+.content :not(pre) > code {
 	font-family: ui-monospace, 'Cascadia Code', monospace;
-	font-size: 0.9em;
+	font-size: 0.875em;
 	background: #18181b;
 	border: 1px solid #27272a;
 	border-radius: 4px;
-	padding: 0.1em 0.35em;
+	padding: 0.1em 0.4em;
+	color: #fde68a;
+}
+
+/* Code blocks + copy button */
+.code-block {
+	position: relative;
 }
 .content pre {
-	background: #18181b;
+	background: #0c0c0e !important;
 	border: 1px solid #27272a;
-	border-radius: 8px;
-	padding: 1em;
+	border-radius: 10px;
+	padding: 1.1em 1.2em;
 	overflow-x: auto;
+	font-size: 0.9rem;
+	line-height: 1.6;
 }
 .content pre code {
 	background: none;
 	border: none;
 	padding: 0;
+	color: inherit;
+}
+.copy-btn {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	padding: 0.25rem 0.55rem;
+	font-size: 0.72rem;
+	font-family: ui-monospace, monospace;
+	color: #a1a1aa;
+	background: #18181b;
+	border: 1px solid #3f3f46;
+	border-radius: 6px;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.code-block:hover .copy-btn {
+	opacity: 1;
+}
+.copy-btn:hover {
+	color: #fff;
+	border-color: var(--accent);
+}
+.copy-btn.copied {
+	color: #4ade80;
+	border-color: #4ade80;
+	opacity: 1;
 }
 
 .sr-only {

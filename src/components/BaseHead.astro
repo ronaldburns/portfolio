@@ -1,7 +1,7 @@
 ---
 // Global <head>. Imported on every page via the layouts.
 import '../styles/global.css';
-import { SITE_TITLE } from '../consts';
+import { SITE_TITLE, AUTHOR, DEFAULT_OG_IMAGE } from '../consts';
 import { originalUrl } from '../lib/images';
 import { Font } from 'astro:assets';
 
@@ -13,7 +13,7 @@ interface Props {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image } = Astro.props;
-const ogImage = image ? originalUrl(image) : undefined;
+const ogImage = originalUrl(image ?? DEFAULT_OG_IMAGE);
 ---
 
 <meta charset="utf-8" />
@@ -36,6 +36,8 @@ const ogImage = image ? originalUrl(image) : undefined;
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
+<meta name="author" content={AUTHOR} />
+<meta name="theme-color" content="#09090b" />
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />

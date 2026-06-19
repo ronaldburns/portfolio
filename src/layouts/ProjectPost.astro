@@ -5,15 +5,33 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import Img from '../components/Img.astro';
+import { AUTHOR } from '../consts';
+import { originalUrl } from '../lib/images';
 
-type Props = CollectionEntry<'projects'>['data'];
+type Props = CollectionEntry<'projects'>['data'] & {
+	newer?: CollectionEntry<'projects'> | null;
+	older?: CollectionEntry<'projects'> | null;
+};
 
-const { title, description, date, lastModified, image, url, repository } = Astro.props;
+const { title, description, date, lastModified, image, url, repository, newer, older } =
+	Astro.props;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: title,
+	description,
+	datePublished: date.toISOString(),
+	...(lastModified && { dateModified: lastModified.toISOString() }),
+	...(image && { image: originalUrl(image) }),
+	author: { '@type': 'Person', name: AUTHOR },
+};
 ---
 
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} image={image} />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 	</head>
 	<body>
 		<Header />
@@ -24,18 +42,23 @@ const { title, description, date, lastModified, image, url, repository } = Astro
 						<FormattedDate date={date} />
 						{lastModified && <span> · updated <FormattedDate date={lastModified} /></span>}
 					</p>
-					<h1 class="font-display text-3xl sm:text-4xl text-zinc-100 mt-2">{title}</h1>
+					<h1 class="font-display text-3xl sm:text-4xl text-zinc-50 mt-2">{title}</h1>
 					<p class="text-zinc-400 mt-3">{description}</p>
 					{
 						(url || repository) && (
 							<div class="flex gap-4 mt-4 text-sm">
 								{url && (
-									<a href={url} target="_blank" rel="noopener" class="text-indigo-300 underline">
+									<a href={url} target="_blank" rel="noopener" class="text-amber-400 hover:underline">
 										Live →
 									</a>
 								)}
 								{repository && (
-									<a href={repository} target="_blank" rel="noopener" class="text-indigo-300 underline">
+									<a
+										href={repository}
+										target="_blank"
+										rel="noopener"
+										class="text-amber-400 hover:underline"
+									>
 										Repository →
 									</a>
 								)}
@@ -48,8 +71,61 @@ const { title, description, date, lastModified, image, url, repository } = Astro
 					<slot />
 				</div>
 			</article>
-			<a href="/" class="inline-block mt-12 text-sm text-zinc-400 hover:text-white">← All projects</a>
+
+			<nav class="grid sm:grid-cols-2 gap-4 mt-16 pt-8 border-t border-zinc-800">
+				{
+					older ? (
+						<a
+							href={`/projects/${older.id}/`}
+							class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
+						>
+							<span class="text-xs text-zinc-500">← Older</span>
+							<span class="block text-zinc-200 group-hover:text-white mt-1">{older.data.title}</span>
+						</a>
+					) : (
+						<span />
+					)
+				}
+				{
+					newer && (
+						<a
+							href={`/projects/${newer.id}/`}
+							class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors text-right"
+						>
+							<span class="text-xs text-zinc-500">Newer →</span>
+							<span class="block text-zinc-200 group-hover:text-white mt-1">{newer.data.title}</span>
+						</a>
+					)
+				}
+			</nav>
+
+			<a href="/" class="inline-block mt-8 text-sm text-zinc-400 hover:text-white">← All projects</a>
 		</main>
 		<Footer />
+
+		<script>
+			// Add a copy button to every code block.
+			document.querySelectorAll('.content pre').forEach((pre) => {
+				const wrapper = document.createElement('div');
+				wrapper.className = 'code-block';
+				pre.parentNode?.insertBefore(wrapper, pre);
+				wrapper.appendChild(pre);
+
+				const btn = document.createElement('button');
+				btn.className = 'copy-btn';
+				btn.type = 'button';
+				btn.textContent = 'Copy';
+				btn.addEventListener('click', async () => {
+					await navigator.clipboard.writeText(pre.textContent ?? '');
+					btn.textContent = 'Copied';
+					btn.classList.add('copied');
+					setTimeout(() => {
+						btn.textContent = 'Copy';
+						btn.classList.remove('copied');
+					}, 1500);
+				});
+				wrapper.appendChild(btn);
+			});
+		</script>
 	</body>
 </html>

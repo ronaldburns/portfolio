@@ -5,18 +5,30 @@ import Img from '../../components/Img.astro';
 import Video from '../../components/Video.astro';
 
 export async function getStaticPaths() {
-	const posts = (await getCollection('projects')).filter((p) => p.data.published !== false);
-	return posts.map((post) => ({
+	const posts = (await getCollection('projects'))
+		.filter((p) => p.data.published !== false)
+		.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+	return posts.map((post, i) => ({
 		params: { slug: post.id },
-		props: post,
+		props: {
+			post,
+			// newer is the previous entry in the desc-sorted list
+			newer: posts[i - 1] ?? null,
+			older: posts[i + 1] ?? null,
+		},
 	}));
 }
-type Props = CollectionEntry<'projects'>;
+type Props = {
+	post: CollectionEntry<'projects'>;
+	newer: CollectionEntry<'projects'> | null;
+	older: CollectionEntry<'projects'> | null;
+};
 
-const post = Astro.props;
+const { post, newer, older } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<ProjectPost {...post.data}>
+<ProjectPost {...post.data} newer={newer} older={older}>
 	<Content components={{ Img, Video }} />
 </ProjectPost>
