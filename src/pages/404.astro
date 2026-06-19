@@ -1,0 +1,27 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={`Not found · ${SITE_TITLE}`} description="That page doesn't exist." />
+	</head>
+	<body>
+		<Header />
+		<main class="max-w-3xl mx-auto px-4 flex flex-col items-center justify-center text-center min-h-[60vh]">
+			<p class="font-display text-7xl sm:text-8xl text-amber-400/80">404</p>
+			<h1 class="font-display text-2xl text-zinc-100 mt-4">This page wandered off.</h1>
+			<p class="text-zinc-400 mt-2">The link's broken or the page never existed.</p>
+			<a
+				href="/"
+				class="mt-8 rounded-lg border border-zinc-800 px-5 py-2.5 text-zinc-200 hover:border-amber-400/40 hover:text-white transition-colors"
+			>
+				← Back to projects
+			</a>
+		</main>
+		<Footer />
+	</body>
+</html>

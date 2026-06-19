@@ -4,23 +4,34 @@ import '../styles/global.css';
 import { SITE_TITLE, AUTHOR, DEFAULT_OG_IMAGE } from '../consts';
 import { originalUrl } from '../lib/images';
 import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
 	title: string;
 	description: string;
 	image?: string;
+	/** Absolute or root-relative URL overriding the social image (e.g. a generated OG card). */
+	ogImage?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const { title, description, image } = Astro.props;
-const ogImage = originalUrl(image ?? DEFAULT_OG_IMAGE);
+const { title, description, image, ogImage: ogOverride } = Astro.props;
+const ogImage = ogOverride
+	? new URL(ogOverride, Astro.site).href
+	: originalUrl(image ?? DEFAULT_OG_IMAGE);
 ---
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<script is:inline>
+	document.documentElement.classList.add('js');
+</script>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
+<!-- Pagefind Component UI (assets generated at build time; 404 in dev is expected). -->
+<link rel="stylesheet" href="/pagefind/pagefind-component-ui.css" />
+<script is:inline type="module" src="/pagefind/pagefind-component-ui.js"></script>
 <link
 	rel="alternate"
 	type="application/rss+xml"
@@ -30,6 +41,7 @@ const ogImage = originalUrl(image ?? DEFAULT_OG_IMAGE);
 <meta name="generator" content={Astro.generator} />
 
 <Font cssVariable="--font-atkinson" preload />
+<ClientRouter />
 
 <link rel="canonical" href={canonicalURL} />
 

@@ -4,11 +4,16 @@ import HeaderLink from './HeaderLink.astro';
 ---
 
 <header class="border-b border-zinc-800/80 backdrop-blur sticky top-0 z-20 bg-zinc-950/70">
-	<nav class="max-w-3xl mx-auto flex items-center justify-between px-4 h-14">
-		<a href="/" class="font-display text-lg text-zinc-100 hover:text-white">{SITE_TITLE}</a>
+	<nav class="max-w-3xl mx-auto flex items-center justify-between px-4 h-14 gap-3">
+		<a href="/" class="font-display text-lg text-zinc-100 hover:text-white shrink-0">{SITE_TITLE}</a>
 		<div class="flex items-center gap-1 text-sm">
 			<HeaderLink href="/">Projects</HeaderLink>
 			<HeaderLink href="/contact">Contact</HeaderLink>
+			<!-- Pagefind Component UI: built-in search button + ⌘K modal -->
+			<div data-pf-theme="dark" class="pf-search ml-1">
+				<pagefind-modal-trigger placeholder="Search"></pagefind-modal-trigger>
+				<pagefind-modal></pagefind-modal>
+			</div>
 		</div>
 	</nav>
 </header>

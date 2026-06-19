@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
@@ -9,12 +10,30 @@ import { AUTHOR } from '../consts';
 import { originalUrl } from '../lib/images';
 
 type Props = CollectionEntry<'projects'>['data'] & {
+	id: string;
 	newer?: CollectionEntry<'projects'> | null;
 	older?: CollectionEntry<'projects'> | null;
+	headings?: MarkdownHeading[];
+	minutesRead?: string;
 };
 
-const { title, description, date, lastModified, image, url, repository, newer, older } =
-	Astro.props;
+const {
+	title,
+	description,
+	date,
+	lastModified,
+	image,
+	url,
+	repository,
+	id,
+	newer,
+	older,
+	headings = [],
+	minutesRead,
+} = Astro.props;
+
+// Top-level sections only (h2) for a clean table of contents.
+const toc = headings.filter((h) => h.depth === 2);
 
 const jsonLd = {
 	'@context': 'https://schema.org',
@@ -30,102 +49,177 @@ const jsonLd = {
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} image={image} />
+		<BaseHead title={title} description={description} image={image} ogImage={`/og/${id}.png`} />
 		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 	</head>
 	<body>
 		<Header />
-		<main class="max-w-3xl mx-auto px-4 py-12">
-			<article>
-				<header class="mb-8">
-					<p class="text-sm text-zinc-500">
-						<FormattedDate date={date} />
-						{lastModified && <span> · updated <FormattedDate date={lastModified} /></span>}
-					</p>
-					<h1 class="font-display text-3xl sm:text-4xl text-zinc-50 mt-2">{title}</h1>
-					<p class="text-zinc-400 mt-3">{description}</p>
+		<div class="relative max-w-3xl xl:max-w-5xl mx-auto px-4 py-12">
+			<main class="max-w-3xl">
+				<article data-pagefind-body>
+					<header class="mb-8">
+						<p class="text-sm text-zinc-500">
+							<FormattedDate date={date} />
+							{minutesRead && <span> · {minutesRead}</span>}
+							{lastModified && <span> · updated <FormattedDate date={lastModified} /></span>}
+						</p>
+						<h1 class="font-display text-3xl sm:text-4xl text-zinc-50 mt-2">{title}</h1>
+						<p class="text-zinc-400 mt-3">{description}</p>
+						{
+							(url || repository) && (
+								<div class="flex gap-4 mt-4 text-sm">
+									{url && (
+										<a href={url} target="_blank" rel="noopener" class="text-amber-400 hover:underline">
+											Live →
+										</a>
+									)}
+									{repository && (
+										<a
+											href={repository}
+											target="_blank"
+											rel="noopener"
+											class="text-amber-400 hover:underline"
+										>
+											Repository →
+										</a>
+									)}
+								</div>
+							)
+						}
+						{image && <Img src={image} alt={title} loading="eager" class="mt-6" />}
+					</header>
+					<div class="content">
+						<slot />
+					</div>
+				</article>
+
+				<nav class="grid sm:grid-cols-2 gap-4 mt-16 pt-8 border-t border-zinc-800">
 					{
-						(url || repository) && (
-							<div class="flex gap-4 mt-4 text-sm">
-								{url && (
-									<a href={url} target="_blank" rel="noopener" class="text-amber-400 hover:underline">
-										Live →
-									</a>
-								)}
-								{repository && (
-									<a
-										href={repository}
-										target="_blank"
-										rel="noopener"
-										class="text-amber-400 hover:underline"
-									>
-										Repository →
-									</a>
-								)}
-							</div>
+						older ? (
+							<a
+								href={`/projects/${older.id}/`}
+								class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
+							>
+								<span class="text-xs text-zinc-500">← Older</span>
+								<span class="block text-zinc-200 group-hover:text-white mt-1">{older.data.title}</span>
+							</a>
+						) : (
+							<span />
 						)
 					}
-					{image && <Img src={image} alt={title} loading="eager" class="mt-6" />}
-				</header>
-				<div class="content">
-					<slot />
-				</div>
-			</article>
+					{
+						newer && (
+							<a
+								href={`/projects/${newer.id}/`}
+								class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors text-right"
+							>
+								<span class="text-xs text-zinc-500">Newer →</span>
+								<span class="block text-zinc-200 group-hover:text-white mt-1">{newer.data.title}</span>
+							</a>
+						)
+					}
+				</nav>
 
-			<nav class="grid sm:grid-cols-2 gap-4 mt-16 pt-8 border-t border-zinc-800">
-				{
-					older ? (
-						<a
-							href={`/projects/${older.id}/`}
-							class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
-						>
-							<span class="text-xs text-zinc-500">← Older</span>
-							<span class="block text-zinc-200 group-hover:text-white mt-1">{older.data.title}</span>
-						</a>
-					) : (
-						<span />
-					)
-				}
-				{
-					newer && (
-						<a
-							href={`/projects/${newer.id}/`}
-							class="group rounded-lg border border-zinc-800 p-4 hover:border-zinc-700 transition-colors text-right"
-						>
-							<span class="text-xs text-zinc-500">Newer →</span>
-							<span class="block text-zinc-200 group-hover:text-white mt-1">{newer.data.title}</span>
-						</a>
-					)
-				}
-			</nav>
+				<a href="/" class="inline-block mt-8 text-sm text-zinc-400 hover:text-white">
+					← All projects
+				</a>
+			</main>
 
-			<a href="/" class="inline-block mt-8 text-sm text-zinc-400 hover:text-white">← All projects</a>
-		</main>
+			{
+				toc.length >= 3 && (
+					<aside class="hidden xl:block absolute top-12 right-0 w-56 h-full" aria-label="Table of contents">
+						<nav id="toc" class="sticky top-20 text-sm">
+							<p class="uppercase tracking-widest text-xs text-zinc-500 mb-3">On this page</p>
+							<ul class="space-y-2 border-l border-zinc-800">
+								{toc.map((h) => (
+									<li>
+										<a
+											href={`#${h.slug}`}
+											data-toc-link={h.slug}
+											class="block pl-3 -ml-px border-l border-transparent text-zinc-500 hover:text-zinc-200 transition-colors"
+										>
+											{h.text}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					</aside>
+				)
+			}
+		</div>
 		<Footer />
 
-		<script>
-			// Add a copy button to every code block.
-			document.querySelectorAll('.content pre').forEach((pre) => {
-				const wrapper = document.createElement('div');
-				wrapper.className = 'code-block';
-				pre.parentNode?.insertBefore(wrapper, pre);
-				wrapper.appendChild(pre);
+		<!-- Lightbox overlay -->
+		<div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-6 cursor-zoom-out">
+			<img id="lightbox-img" src="" alt="" class="max-w-full max-h-full rounded-lg" />
+		</div>
 
-				const btn = document.createElement('button');
-				btn.className = 'copy-btn';
-				btn.type = 'button';
-				btn.textContent = 'Copy';
-				btn.addEventListener('click', async () => {
-					await navigator.clipboard.writeText(pre.textContent ?? '');
-					btn.textContent = 'Copied';
-					btn.classList.add('copied');
-					setTimeout(() => {
-						btn.textContent = 'Copy';
-						btn.classList.remove('copied');
-					}, 1500);
+		<script>
+			function initPost() {
+				// 1. Copy buttons on code blocks
+				document.querySelectorAll('.content pre').forEach((pre) => {
+					if (pre.parentElement?.classList.contains('code-block')) return; // already wrapped
+					const wrapper = document.createElement('div');
+					wrapper.className = 'code-block';
+					pre.parentNode?.insertBefore(wrapper, pre);
+					wrapper.appendChild(pre);
+					const btn = document.createElement('button');
+					btn.className = 'copy-btn';
+					btn.type = 'button';
+					btn.textContent = 'Copy';
+					btn.addEventListener('click', async () => {
+						await navigator.clipboard.writeText(pre.textContent ?? '');
+						btn.textContent = 'Copied';
+						btn.classList.add('copied');
+						setTimeout(() => {
+							btn.textContent = 'Copy';
+							btn.classList.remove('copied');
+						}, 1500);
+					});
+					wrapper.appendChild(btn);
 				});
-				wrapper.appendChild(btn);
-			});
+
+				// 2. Image lightbox
+				const lightbox = document.getElementById('lightbox');
+				const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+				document.querySelectorAll('.content img').forEach((img) => {
+					(img as HTMLElement).style.cursor = 'zoom-in';
+					img.addEventListener('click', () => {
+						if (!lightbox || !lightboxImg) return;
+						lightboxImg.src = (img as HTMLImageElement).currentSrc || (img as HTMLImageElement).src;
+						lightbox.classList.remove('hidden');
+						lightbox.classList.add('flex');
+					});
+				});
+				lightbox?.addEventListener('click', () => {
+					lightbox.classList.add('hidden');
+					lightbox.classList.remove('flex');
+				});
+
+				// 3. Table-of-contents active-section highlight
+				const tocLinks = document.querySelectorAll('[data-toc-link]');
+				if (tocLinks.length) {
+					const obs = new IntersectionObserver(
+						(entries) => {
+							entries.forEach((entry) => {
+								if (!entry.isIntersecting) return;
+								const id = entry.target.id;
+								tocLinks.forEach((l) => {
+									const active = l.getAttribute('data-toc-link') === id;
+									l.classList.toggle('text-amber-400', active);
+									l.classList.toggle('border-amber-400', active);
+									l.classList.toggle('text-zinc-500', !active);
+								});
+							});
+						},
+						{ rootMargin: '-10% 0px -80% 0px' },
+					);
+					document.querySelectorAll('.content h2[id]').forEach((h) => obs.observe(h));
+				}
+			}
+
+			document.addEventListener('astro:page-load', initPost);
 		</script>
 	</body>
 </html>

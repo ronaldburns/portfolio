@@ -17,3 +17,28 @@ const year = new Date().getFullYear();
 		</div>
 	</div>
 </footer>
+
+<script>
+	// Subtle scroll-reveal for [data-animate] elements.
+	function initReveal() {
+		const items = document.querySelectorAll('[data-animate]:not(.revealed)');
+		if (!items.length) return;
+		if (!('IntersectionObserver' in window)) {
+			items.forEach((el) => el.classList.add('revealed'));
+			return;
+		}
+		const obs = new IntersectionObserver(
+			(entries, o) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('revealed');
+						o.unobserve(entry.target);
+					}
+				});
+			},
+			{ rootMargin: '0px 0px -10% 0px' },
+		);
+		items.forEach((el) => obs.observe(el));
+	}
+	document.addEventListener('astro:page-load', initReveal);
+</script>
