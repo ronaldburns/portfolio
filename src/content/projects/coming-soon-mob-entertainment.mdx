@@ -1,67 +1,42 @@
 ---
 title: Engineering at Mob Entertainment
-description: Excited to share my journey since joining Mob Entertainment!
+description: What I've actually been working on as a gameplay programmer at Mob Entertainment since July 2024.
 date: "December 1, 2024"
 published: true
 featured: false
 image: projects/coming-soon-mob-entertainment/Yarnaby.webp
 ---
 
-# My Journey at Mob Entertainment – Gameplay Programming and Beyond!
+I joined Mob Entertainment as a Gameplay Programmer in July 2024. The title undersells the scope a bit. Most of what I do sits somewhere between gameplay, engine tooling, and infrastructure.
 
-Hey everyone! Big update: I joined Mob Entertainment as a Gameplay Programmer back in July 2024, and it's been an incredible ride so far. While my title is "Gameplay Programmer," what I do goes way beyond just gameplay—it's been a blend of engineering, problem-solving, and creative exploration.
+## What I've been working on
 
-## What I've Been Working On
+A lot of my time goes into the Unreal Editor itself: custom editor modes, graphs, plugins, and tooling that cut down the repetitive parts of day-to-day development. The less the editor fights you, the more time the team spends actually building the game.
 
-- **Unreal Editor Magic**: I've been customizing the Unreal Editor with new modes, graphs, plugins, and tools that make development faster and more intuitive. It's all about improving workflows and efficiency.
+On the runtime side I'm writing a lot of C++, mostly gameplay systems that need to scale and stay fast under load. Mass Entity has been central to that. It's what we use to manage large numbers of game objects without the per-actor overhead you'd normally run into.
 
-- **C++ Deep Dive**: I'm in the trenches with C++, building scalable, high-performance systems that feel like the backbone of the game.
+Some of the specific systems I've built or worked on:
 
-- **Mass Entity**: The Mass Entity system has been a game-changer for managing complex game environments. Think of it as orchestrating an entire ecosystem of game objects.
+- A save system that reliably persists player progress.
+- Multiplayer through Epic Online Services, including matchmaking and voice chat.
+- Menus and in-game UI that need to stay responsive.
+- Core mechanics like movement and inventory.
 
-- **Save Systems**: I created a save system that ensures players never lose their progress, no matter what.
+## Tooling and DevOps
 
-- **Multiplayer**: From matchmaking to voice chat, I've integrated Epic Online Services to bring people together in-game.
+Outside of gameplay code, a fair amount of my time goes to the build and deployment pipeline. I've customized Submit Tool, Unreal Game Sync, and Horde to fit how our team actually works, and I help out on the DevOps side to keep builds and deploys moving.
 
-- **UI Development**: Crafting user interfaces that are not only functional but also smooth and enjoyable to use has been a key focus.
+The stack I touch most:
 
-- **Core Mechanics**: Movement, inventory, and other gameplay essentials—I've been shaping the systems that define how the game plays.
+- Unreal Engine and C++
+- Epic Online Services
+- Perforce for version control
+- Jenkins for builds
+- Jira and Confluence
+- Terraform, Nomad, Vault, Kubernetes, and Docker on the infrastructure side
 
-- **DevOps Support**: Beyond coding, I've contributed to streamlining our development pipeline, making the whole process smoother for the team.
+## The stuff I can't talk about
 
-- **Tool Customization**: I've tailored tools like Submit Tool, Unreal Game Sync, and Horde to fit our specific needs and keep things running seamlessly.
+There's also a chunk of work on unannounced projects I can't get into yet. NDAs. What I'll say is it's been some of the more interesting gameplay work I've done.
 
-## The Secret Stuff
-
-I'm also working on some unannounced projects that I can't share just yet. But trust me, they're pushing boundaries with gameplay that's fresh, fun, and genuinely exciting.
-
-## What Keeps Me Going
-
-- **Scalability**: Building systems that can evolve with our projects is my jam.
-- **Optimization**: I'm all about making everything run as smoothly and efficiently as possible.
-- **Team Collaboration**: I thrive in a team setting where every piece comes together to create something amazing.
-
-## Tools of the Trade
-
-Here's what's in my toolbox:
-
-- **Unreal Engine**
-- **C++**
-- **Epic Online Services**
-- **Perforce**
-- **Jenkins**
-- **Jira**
-- **Confluence**
-- **Terraform**
-- **Nomad**
-- **Vault**
-- **Kubernetes**
-- **Docker**
-
-## Looking Ahead
-
-The journey at Mob Entertainment is just getting started, and I'm excited for what's next. It's a place where I can challenge myself, grow, and contribute to projects that will make a real impact. While I can't share too much (thanks, NDAs!), I'm always happy to chat about tech, tools, or game dev in general. Hit me up—drink's on me. 😏
-
----
-
-*Disclaimer: Details about current projects are limited due to NDAs, but I'm always up for discussing general game dev topics and sharing insights.*
+That's the short version. If you want to talk shop about Unreal, tooling, or game dev in general, I'm around.
