@@ -1,11 +1,42 @@
 {
+  // Press F5 (or the green ▶ in the Run and Debug panel) with a config selected.
+  // - "Dev server + Browser" is the default: it runs the Astro dev server under
+  //   the Node debugger (server-side breakpoints) AND, once Astro prints its URL,
+  //   auto-opens Edge in debug mode (client-side breakpoints).
+  // Server-side breakpoints work in .ts/.mjs/.js (e.g. src/lib/images.ts,
+  // src/content.config.ts, remark-reading-time.mjs, src/pages/og/[...route].ts).
+  // Client-side breakpoints work in component <script> blocks (search, lightbox…).
+  // Note: breakpoints inside .astro *frontmatter* may not bind. Use a `debugger`
+  // statement there if a line breakpoint is skipped (a known VSCode/Astro limit).
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "./node_modules/.bin/astro dev",
-      "name": "Development server",
+      "name": "Dev server + Browser",
+      "type": "node-terminal",
       "request": "launch",
-      "type": "node-terminal"
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}",
+      "serverReadyAction": {
+        "pattern": "(https?://localhost:\\d+)",
+        "uriFormat": "%s",
+        "action": "debugWithEdge",
+        "webRoot": "${workspaceFolder}",
+        "killOnServerStop": true
+      }
+    },
+    {
+      "name": "Dev server (server-side only)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Build (debug OG / remark / endpoints)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run build",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

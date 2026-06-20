@@ -226,17 +226,55 @@ html.js [data-animate].revealed {
 	transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* --- Pagefind Component UI (dark + amber accent) ----------------------- */
-/* data-pf-theme="dark" supplies the dark preset; we just nudge the accent.
-   Custom properties pierce the component's `all: initial` isolation. */
-:root {
-	--pf-outline-focus: var(--accent);
-	--pf-modal-selected-background: rgba(251, 146, 60, 0.15);
-	--pf-result-title-hover: var(--accent-soft);
+/* --- Search modal (custom, Pagefind JS API) ---------------------------- */
+.search-result {
+	display: block;
+	padding: 0.7rem 0.8rem;
+	border-radius: 8px;
+	color: #d4d4d8;
+	border: 1px solid transparent;
+	transition: background 0.12s, border-color 0.12s;
 }
-.pf-search {
-	display: flex;
-	align-items: center;
+.search-result:hover,
+.search-result:focus-visible {
+	background: rgba(251, 146, 60, 0.1);
+	border-color: rgba(251, 146, 60, 0.25);
+	outline: none;
+}
+.search-result-title {
+	display: block;
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	color: #fafafa;
+}
+.search-result:hover .search-result-title,
+.search-result:focus-visible .search-result-title {
+	color: #fff;
+}
+.search-result-excerpt {
+	display: block;
+	font-size: 0.85rem;
+	color: #a1a1aa;
+	margin-top: 0.15rem;
+	line-height: 1.4;
+}
+.search-result-excerpt mark {
+	background: rgba(251, 146, 60, 0.25);
+	color: #fde68a;
+	border-radius: 2px;
+	padding: 0 1px;
+}
+.search-empty {
+	padding: 1rem 0.8rem;
+	color: #71717a;
+	font-size: 0.9rem;
+}
+.search-empty code {
+	font-family: ui-monospace, monospace;
+	font-size: 0.85em;
+	background: #18181b;
+	border: 1px solid #27272a;
+	border-radius: 4px;
+	padding: 0.05em 0.3em;
 }
 
 @media (prefers-reduced-motion: reduce) {

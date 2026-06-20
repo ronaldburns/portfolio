@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Local media staging (uploaded to R2 manually, not committed)
+.media-staging/

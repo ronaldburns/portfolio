@@ -1,5 +1,5 @@
 {
-	// Cloudflare Workers — static assets deployment for the Astro build.
+	// Cloudflare Workers | static assets deployment for the Astro build.
 	// Deploy with: npm run build && npx wrangler deploy
 	// account_id is pinned to the PERSONAL Cloudflare account so a deploy with
 	// the wrong credentials (e.g. a work token) fails loudly instead of

@@ -2,7 +2,7 @@
 
 export const SITE_TITLE = 'Ronald Burns';
 export const SITE_DESCRIPTION =
-	'Game, graphics, and infrastructure engineering — projects and dev logs by Ronald Burns.';
+	'Projects and dev logs by Ronald Burns.';
 
 // Used in the home hero, author meta, and JSON-LD structured data.
 export const AUTHOR = 'Ronald Burns';

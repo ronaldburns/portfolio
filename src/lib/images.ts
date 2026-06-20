@@ -2,7 +2,7 @@ import { IMAGE_CDN, IMAGE_WIDTHS, USE_IMAGE_TRANSFORM } from '../consts';
 
 /** Normalize a media reference to a clean key like `projects/slug/file.png`. */
 function toKey(src: string): string {
-	// Already an absolute URL pointing at the CDN — strip the origin (and decode
+	// Already an absolute URL pointing at the CDN. Strip the origin (and decode
 	// any %2F path-encoding left over from the old hardcoded URLs).
 	if (src.startsWith(IMAGE_CDN)) {
 		return decodeURIComponent(src.slice(IMAGE_CDN.length)).replace(/^\/+/, '');

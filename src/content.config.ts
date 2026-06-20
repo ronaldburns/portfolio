@@ -11,7 +11,7 @@ const projects = defineCollection({
 		date: z.coerce.date(),
 		lastModified: z.coerce.date().optional(),
 		published: z.boolean().default(true),
-		// Hero / OG image — an R2 key or absolute URL (migrated later).
+		// Hero / OG image - an R2 key or absolute URL (migrated later).
 		image: z.string().optional(),
 		url: z.string().optional(),
 		repository: z.string().optional(),

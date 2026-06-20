@@ -12,7 +12,7 @@ When working with 3D widgets in Unreal Engine, you might notice that their color
 
 ### Understanding the Issue
 
-Unreal Engine handles color spaces meticulously to ensure accurate color representation. Typically, textures and materials are authored in Linear space, and the engine converts them to sRGB for final output. However, 3D widgets are an exception—they are rendered in sRGB space by default. Consequently, during the final frame processing, the engine mistakenly converts these already sRGB colors, resulting in incorrect and oversaturated visuals.
+Unreal Engine handles color spaces meticulously to ensure accurate color representation. Typically, textures and materials are authored in Linear space, and the engine converts them to sRGB for final output. However, 3D widgets are an exception. They are rendered in sRGB space by default. Consequently, during the final frame processing, the engine mistakenly converts these already sRGB colors, resulting in incorrect and oversaturated visuals.
 
 ### The Solution: sRGB to Linear Conversion
 

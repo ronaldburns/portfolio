@@ -9,11 +9,169 @@ import HeaderLink from './HeaderLink.astro';
 		<div class="flex items-center gap-1 text-sm">
 			<HeaderLink href="/">Projects</HeaderLink>
 			<HeaderLink href="/contact">Contact</HeaderLink>
-			<!-- Pagefind Component UI: built-in search button + ⌘K modal -->
-			<div data-pf-theme="dark" class="pf-search ml-1">
-				<pagefind-modal-trigger placeholder="Search"></pagefind-modal-trigger>
-				<pagefind-modal></pagefind-modal>
-			</div>
+			<button
+				id="search-btn"
+				type="button"
+				aria-label="Search"
+				class="ml-1 flex items-center gap-2 rounded-lg border border-zinc-700/70 bg-zinc-900/60 pl-2.5 pr-2 py-1.5 text-zinc-400 hover:text-white hover:border-amber-400/40 transition-colors"
+			>
+				<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+					<circle cx="11" cy="11" r="7"></circle>
+					<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+				</svg>
+				<span class="hidden sm:inline">Search</span>
+				<span class="hidden sm:flex items-center gap-1 text-[10px] text-zinc-500">
+					<kbd class="border border-zinc-700 rounded px-1 py-0.5 leading-none" data-mod-key>Ctrl</kbd>
+					<kbd class="border border-zinc-700 rounded px-1 py-0.5 leading-none">K</kbd>
+				</span>
+			</button>
 		</div>
 	</nav>
 </header>
+
+<!-- Search modal (driven by the Pagefind JS API) -->
+<div id="search-modal" class="fixed inset-0 z-50 hidden items-start justify-center p-4 sm:pt-24 bg-zinc-950/80 backdrop-blur-sm">
+	<div id="search-panel" class="w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-950/95 backdrop-blur-xl shadow-2xl ring-1 ring-amber-400/5 overflow-hidden">
+		<div class="group flex items-center gap-2 border-b border-zinc-800 px-4">
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-zinc-500 group-focus-within:text-amber-400 transition-colors shrink-0" aria-hidden="true">
+				<circle cx="11" cy="11" r="7"></circle>
+				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+			</svg>
+			<input
+				id="search-input"
+				type="search"
+				autocomplete="off"
+				placeholder="Search posts..."
+				class="w-full bg-transparent py-3.5 text-zinc-100 placeholder:text-zinc-500 caret-amber-400 outline-none"
+			/>
+			<kbd class="text-[10px] text-zinc-500 border border-zinc-700 rounded px-1 py-px shrink-0">Esc</kbd>
+		</div>
+		<div id="search-results" class="max-h-[60vh] overflow-y-auto p-2"></div>
+		<div class="flex items-center gap-3 border-t border-zinc-800 px-4 py-2 text-[11px] text-zinc-500">
+			<span class="flex items-center gap-1">
+				<kbd class="border border-zinc-700 rounded px-1 text-zinc-400">&#8629;</kbd> open
+			</span>
+			<span class="flex items-center gap-1">
+				<kbd class="border border-zinc-700 rounded px-1 text-zinc-400">esc</kbd> close
+			</span>
+			<span class="ml-auto font-display text-zinc-600">Pagefind</span>
+		</div>
+	</div>
+</div>
+
+<script>
+	let pf: any = null;
+	let pfTried = false;
+
+	async function ensurePagefind() {
+		if (pfTried) return pf;
+		pfTried = true;
+		try {
+			// Built at index time, not present during the Vite build. Keep the
+			// path non-literal so the bundler never tries to resolve it.
+			const url = new URL('/pagefind/pagefind.js', location.origin).href;
+			pf = await import(/* @vite-ignore */ url);
+			await pf.options?.({ excerptLength: 20 });
+		} catch {
+			pf = null; // dev mode: index not built yet
+		}
+		return pf;
+	}
+
+	function el(id: string) {
+		return document.getElementById(id);
+	}
+
+	function setModKey() {
+		const plat = (navigator as any).userAgentData?.platform || navigator.platform || navigator.userAgent;
+		const isMac = /mac|iphone|ipad|ipod/i.test(plat);
+		document.querySelectorAll('[data-mod-key]').forEach((node) => {
+			node.textContent = isMac ? '⌘' : 'Ctrl';
+		});
+	}
+
+	function openSearch() {
+		const modal = el('search-modal');
+		if (!modal) return;
+		modal.classList.remove('hidden');
+		modal.classList.add('flex');
+		(el('search-input') as HTMLInputElement | null)?.focus();
+		ensurePagefind();
+	}
+
+	function closeSearch() {
+		const modal = el('search-modal');
+		if (!modal) return;
+		modal.classList.add('hidden');
+		modal.classList.remove('flex');
+	}
+
+	function escapeHtml(s: string) {
+		const d = document.createElement('div');
+		d.textContent = s;
+		return d.innerHTML;
+	}
+
+	async function runSearch(query: string) {
+		const out = el('search-results');
+		if (!out) return;
+		const pagefind = await ensurePagefind();
+		if (!pagefind) {
+			out.innerHTML =
+				'<p class="search-empty">Search runs on the built site. Try it on the deployed site or a static server over <code>dist</code>.</p>';
+			return;
+		}
+		if (!query.trim()) {
+			out.innerHTML = '';
+			return;
+		}
+		const search = await pagefind.debouncedSearch(query);
+		if (!search) return; // superseded by a newer keystroke
+		const results = await Promise.all(search.results.slice(0, 8).map((r: any) => r.data()));
+		if (!results.length) {
+			out.innerHTML = '<p class="search-empty">No results.</p>';
+			return;
+		}
+		out.innerHTML = results
+			.map((d: any) => {
+				const url = d.url.replace(/index\.html$/, '').replace(/\.html$/, '/');
+				const title = escapeHtml(d.meta?.title ?? url);
+				return `<a class="search-result" href="${url}">
+					<span class="search-result-title">${title}</span>
+					<span class="search-result-excerpt">${d.excerpt}</span>
+				</a>`;
+			})
+			.join('');
+	}
+
+	// Event delegation + global keys survive view-transition DOM swaps.
+	document.addEventListener('click', (e) => {
+		const t = e.target as HTMLElement;
+		if (t.closest('#search-btn')) openSearch();
+		else if (t.id === 'search-modal') closeSearch(); // backdrop only
+	});
+	document.addEventListener('keydown', (e) => {
+		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+			e.preventDefault();
+			openSearch();
+		} else if (e.key === 'Escape') {
+			closeSearch();
+		} else if (e.key === 'Enter' && (e.target as HTMLElement).id === 'search-input') {
+			const first = document.querySelector('#search-results .search-result') as HTMLAnchorElement | null;
+			if (first) {
+				e.preventDefault();
+				first.click(); // routes via view transitions
+			}
+		}
+	});
+	document.addEventListener('input', (e) => {
+		if ((e.target as HTMLElement).id === 'search-input') {
+			runSearch((e.target as HTMLInputElement).value);
+		}
+	});
+	// On first load and after each view-transition navigation.
+	document.addEventListener('astro:page-load', () => {
+		closeSearch();
+		setModKey();
+	});
+</script>
