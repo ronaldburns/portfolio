@@ -6,9 +6,9 @@ export const SITE_DESCRIPTION =
 
 // Used in the home hero, author meta, and JSON-LD structured data.
 export const AUTHOR = 'Ronald Burns';
-export const ROLE = 'Gameplay, graphics & infrastructure engineer';
+export const ROLE = 'Gameplay, engine, graphics & infrastructure engineer';
 export const BIO =
-	'Gameplay programmer at Mob Entertainment. I build game systems, engine tooling, shaders, and the infrastructure that ships them. This is where I log what I work on.';
+	'Core Engineer II at Mob Entertainment. I build game systems, engine tooling, shaders, and the infrastructure that ships them. This is where I log what I work on.';
 
 // Fallback social-share image for pages without their own (home, contact).
 // Any R2 key or absolute URL.
