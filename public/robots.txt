@@ -1,0 +1,5 @@
+# https://ronaldburns.dev
+User-agent: *
+Allow: /
+
+Sitemap: https://ronaldburns.dev/sitemap-index.xml
