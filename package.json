@@ -27,6 +27,6 @@
   },
   "devDependencies": {
     "pagefind": "^1.5.2",
-    "wrangler": "^4.103.0"
+    "wrangler": "^4.147.0"
   }
 }
