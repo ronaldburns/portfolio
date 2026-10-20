@@ -1,7 +1,7 @@
 ---
 title: "An Endfield-style toon renderer for Unreal Engine 6"
 description: "I extended Unreal's Substrate toon path with SDF face shadows, strand-lit hair, eyes drawn over the bangs, hull outlines and toon-aware lights, then matched it on the Android Vulkan preview I use for Quest."
-date: "Oct 20, 2026"
+date: "Oct 8, 2026"
 image: projects/endfield-toon-renderer/hero.jpg
 tags: "Unreal Engine, C++, HLSL, Rendering, Substrate, Toon shading, VR"
 featured: true
@@ -80,7 +80,7 @@ Another bug was worse. Custom outputs are numbered, and a cached material transl
 
 Artists light a scene, and a character in that scene has to look right without a second rig for every shot. So the global controls live where the rest of the look lives, in a new Toon Character section of the post process volume. Unreal blends volumes as the camera moves, and the renderer packs the result into 16 float4s on the view uniform buffer, `View.ToonCharacterParams`, which every character pixel reads.
 
-<Loop src="projects/endfield-toon-renderer/pp-controls.mp4" poster="projects/endfield-toon-renderer/pp-controls-poster.jpg" width={1280} height={720} label="Post process controls" caption="Four volume settings animated in turn on one shot, with the field names from the Details panel." />
+<Figure src="projects/endfield-toon-renderer/details-toon-character.png" alt="The Details panel of a post process volume, scrolled to the Toon Character section. Main Light is open, with Main Light Multiplier at 0.9, Shadow Albedo Multiplier at 0.8, Specular Multiplier at 1.0, Ignore Main Light Shadow ticked, Main Light Mode on Camera Follow but not overridden, Camera Follow Bias at 32 and 10, Range Bias at -0.4, and Main Light Override Color set to white with the skin override left off. Eye, Ambient, Rim Light, Face Rim and Reflection are folded below it." width={1174} height={919} caption="The Toon Character section of the look-dev level's post process volume, with Main Light open. Each setting has its own override box and blends between volumes like the stock ones." />
 
 The key light is the biggest of them. Main Light Mode takes the scene's directional light, a custom direction, or Camera Follow, which turns the key with the camera so a character keeps a flattering light from any angle. Range Bias is added to N·L before the diffuse ramp, so it grows or shrinks the lit side everywhere at once. Shadow Albedo Multiplier (0.7 by default) and the tint modes set the colour of the shadow side. Auto Rim puts a rim along the silhouette on a side you choose, and Face Rim gives the face its own. Ambient comes in as one hue and one intensity for the whole character, from the volumetric lightmap or from the volume, and an optional gradient brightens it toward one direction.
 
