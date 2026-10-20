@@ -1,38 +1,14 @@
 @import 'tailwindcss';
 
-/* Theme: warm charcoal + international orange.
- * The zinc/amber utility names used across the markup are remapped here to a
- * custom warm ramp, so the whole site re-themes from this one block. Radii are
- * tightened at the same time. */
-@theme {
-	--color-zinc-50: #f4f2ec;
-	--color-zinc-100: #e8e5de;
-	--color-zinc-200: #d9d5cc;
-	--color-zinc-300: #c9c5bb;
-	--color-zinc-400: #a7a396;
-	--color-zinc-500: #8a8679;
-	--color-zinc-600: #6b675c;
-	--color-zinc-700: #4c4941;
-	--color-zinc-800: #34312b;
-	--color-zinc-900: #201e1b;
-	--color-zinc-950: #141311;
-
-	--color-amber-400: #ff4f00; /* international orange, the one accent */
-
-	--radius-md: 4px;
-	--radius-lg: 5px;
-	--radius-xl: 6px;
-}
-
 :root {
 	color-scheme: dark;
-	--accent: #ff4f00;
-	--accent-soft: #ff8a4d;
+	--accent: #fb923c; /* amber-400, nod to the old site's orange */
+	--accent-soft: #fdba74;
 }
 
 html {
 	font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
-	background-color: #141311;
+	background-color: #09090b; /* zinc-950 */
 	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 }
@@ -40,12 +16,17 @@ html {
 body {
 	margin: 0;
 	min-height: 100vh;
-	color: #d9d5cc;
-	border-top: 3px solid var(--accent);
+	color: #d4d4d8; /* zinc-300 */
+	background-image: radial-gradient(
+		60% 50% at 50% -10%,
+		rgba(251, 146, 60, 0.06),
+		transparent 70%
+	);
+	background-repeat: no-repeat;
 }
 
 a {
-	color: #e8e5de;
+	color: #e4e4e7;
 	text-decoration: none;
 }
 a:hover {
@@ -53,23 +34,27 @@ a:hover {
 }
 
 ::selection {
-	background: var(--accent);
-	color: #141311;
+	background: rgba(251, 146, 60, 0.3);
+	color: #fff;
 }
 
-/* Display font for headings/branding. */
+/* Display font for headings/branding (kept from the old site). */
+@font-face {
+	font-family: 'CalSans';
+	src: url('/fonts/CalSans-SemiBold.ttf') format('truetype');
+	font-weight: 600;
+	font-display: swap;
+}
 .font-display {
-	font-family: 'Archivo Black', var(--font-atkinson), sans-serif;
-	font-weight: 400;
-	letter-spacing: 0.01em;
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	letter-spacing: -0.01em;
 }
 
 /* --- Rendered MDX content ------------------------------------------------ */
 .content {
 	line-height: 1.75;
 	font-size: 1.05rem;
-	color: #d9d5cc;
-	overflow-wrap: break-word;
+	color: #d4d4d8;
 }
 .content > * + * {
 	margin-top: 1.15em;
@@ -78,23 +63,22 @@ a:hover {
 .content h2,
 .content h3,
 .content h4 {
-	font-family: 'Archivo Black', var(--font-atkinson), sans-serif;
-	font-weight: 400;
-	color: #f4f2ec;
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	color: #fafafa;
 	line-height: 1.25;
 	margin-top: 2em;
 	scroll-margin-top: 5rem;
 }
 .content h2 {
-	font-size: 1.45rem;
-	border-bottom: 1px solid #34312b;
+	font-size: 1.7rem;
+	border-bottom: 1px solid #27272a;
 	padding-bottom: 0.3em;
 }
 .content h3 {
-	font-size: 1.15rem;
+	font-size: 1.3rem;
 }
 .content h4 {
-	font-size: 1rem;
+	font-size: 1.1rem;
 }
 .content a {
 	color: var(--accent-soft);
@@ -116,27 +100,27 @@ a:hover {
 	list-style: decimal;
 }
 .content li::marker {
-	color: #8a8679;
+	color: #71717a;
 }
 .content blockquote {
 	border-left: 3px solid var(--accent);
 	padding-left: 1em;
-	color: #a7a396;
+	color: #a1a1aa;
 	font-style: italic;
 }
 .content hr {
 	border: none;
-	border-top: 1px solid #34312b;
+	border-top: 1px solid #27272a;
 	margin: 2.5em 0;
 }
 .content :not(pre) > code {
 	font-family: ui-monospace, 'Cascadia Code', monospace;
 	font-size: 0.875em;
-	background: #201e1b;
-	border: 1px solid #34312b;
-	border-radius: 3px;
+	background: #18181b;
+	border: 1px solid #27272a;
+	border-radius: 4px;
 	padding: 0.1em 0.4em;
-	color: #ffb38a;
+	color: #fde68a;
 }
 
 /* Code blocks + copy button */
@@ -144,9 +128,9 @@ a:hover {
 	position: relative;
 }
 .content pre {
-	background: #191816 !important;
-	border: 1px solid #34312b;
-	border-radius: 5px;
+	background: #0c0c0e !important;
+	border: 1px solid #27272a;
+	border-radius: 10px;
 	padding: 1.1em 1.2em;
 	overflow-x: auto;
 	font-size: 0.9rem;
@@ -165,10 +149,10 @@ a:hover {
 	padding: 0.25rem 0.55rem;
 	font-size: 0.72rem;
 	font-family: ui-monospace, monospace;
-	color: #a7a396;
-	background: #201e1b;
-	border: 1px solid #4c4941;
-	border-radius: 3px;
+	color: #a1a1aa;
+	background: #18181b;
+	border: 1px solid #3f3f46;
+	border-radius: 6px;
 	cursor: pointer;
 	opacity: 0;
 	transition: opacity 0.15s, color 0.15s, border-color 0.15s;
@@ -204,10 +188,10 @@ a:hover {
 	display: block;
 	margin: -1.1em -1.2em 1em;
 	padding: 0.55em 1.2em;
-	background: #201e1b;
-	border-bottom: 1px solid #34312b;
-	border-radius: 5px 5px 0 0;
-	color: #a7a396;
+	background: #18181b;
+	border-bottom: 1px solid #27272a;
+	border-radius: 10px 10px 0 0;
+	color: #a1a1aa;
 	font-family: ui-monospace, monospace;
 	font-size: 0.78rem;
 }
@@ -218,7 +202,7 @@ a:hover {
 	margin: 0 -1.2em;
 }
 .content pre code .line.highlighted {
-	background: rgba(255, 79, 0, 0.1);
+	background: rgba(251, 146, 60, 0.12);
 	box-shadow: inset 2px 0 0 var(--accent);
 }
 .content pre code .line.diff.add {
@@ -231,25 +215,36 @@ a:hover {
 	opacity: 0.7;
 }
 
+/* --- Scroll reveal (only active when JS is present) --------------------- */
+html.js [data-animate] {
+	opacity: 0;
+	transform: translateY(10px);
+}
+html.js [data-animate].revealed {
+	opacity: 1;
+	transform: none;
+	transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
 /* --- Search modal (custom, Pagefind JS API) ---------------------------- */
 .search-result {
 	display: block;
 	padding: 0.7rem 0.8rem;
-	border-radius: 4px;
-	color: #d9d5cc;
+	border-radius: 8px;
+	color: #d4d4d8;
 	border: 1px solid transparent;
 	transition: background 0.12s, border-color 0.12s;
 }
 .search-result:hover,
 .search-result:focus-visible {
-	background: rgba(255, 79, 0, 0.07);
-	border-color: rgba(255, 79, 0, 0.3);
+	background: rgba(251, 146, 60, 0.1);
+	border-color: rgba(251, 146, 60, 0.25);
 	outline: none;
 }
 .search-result-title {
 	display: block;
-	font-weight: 700;
-	color: #f4f2ec;
+	font-family: 'CalSans', var(--font-atkinson), sans-serif;
+	color: #fafafa;
 }
 .search-result:hover .search-result-title,
 .search-result:focus-visible .search-result-title {
@@ -258,31 +253,35 @@ a:hover {
 .search-result-excerpt {
 	display: block;
 	font-size: 0.85rem;
-	color: #a7a396;
+	color: #a1a1aa;
 	margin-top: 0.15rem;
 	line-height: 1.4;
 }
 .search-result-excerpt mark {
-	background: rgba(255, 79, 0, 0.3);
-	color: #ffb38a;
+	background: rgba(251, 146, 60, 0.25);
+	color: #fde68a;
 	border-radius: 2px;
 	padding: 0 1px;
 }
 .search-empty {
 	padding: 1rem 0.8rem;
-	color: #8a8679;
+	color: #71717a;
 	font-size: 0.9rem;
 }
 .search-empty code {
 	font-family: ui-monospace, monospace;
 	font-size: 0.85em;
-	background: #201e1b;
-	border: 1px solid #34312b;
-	border-radius: 3px;
+	background: #18181b;
+	border: 1px solid #27272a;
+	border-radius: 4px;
 	padding: 0.05em 0.3em;
 }
 
 @media (prefers-reduced-motion: reduce) {
+	html.js [data-animate] {
+		opacity: 1;
+		transform: none;
+	}
 	* {
 		scroll-behavior: auto;
 	}

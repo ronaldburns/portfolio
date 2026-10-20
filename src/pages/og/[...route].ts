@@ -29,17 +29,18 @@ const overlay = Buffer.from(
 	`<svg width="${OG_W}" height="${OG_H}" xmlns="http://www.w3.org/2000/svg">
 		<defs>
 			<radialGradient id="vig" cx="50%" cy="42%" r="78%">
-				<stop offset="50%" stop-color="#141311" stop-opacity="0"/>
-				<stop offset="100%" stop-color="#141311" stop-opacity="0.78"/>
+				<stop offset="50%" stop-color="#09090b" stop-opacity="0"/>
+				<stop offset="100%" stop-color="#09090b" stop-opacity="0.78"/>
 			</radialGradient>
 			<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="45%" stop-color="#141311" stop-opacity="0.1"/>
-				<stop offset="100%" stop-color="#141311" stop-opacity="0.9"/>
+				<stop offset="45%" stop-color="#09090b" stop-opacity="0.1"/>
+				<stop offset="100%" stop-color="#09090b" stop-opacity="0.9"/>
 			</linearGradient>
 		</defs>
-		<rect width="100%" height="100%" fill="#141311" opacity="0.3"/>
+		<rect width="100%" height="100%" fill="#09090b" opacity="0.3"/>
 		<rect width="100%" height="100%" fill="url(#vig)"/>
 		<rect width="100%" height="100%" fill="url(#fade)"/>
+		<rect x="0" y="0" width="12" height="100%" fill="#fb923c"/>
 	</svg>`,
 );
 
@@ -95,10 +96,11 @@ export const { getStaticPaths, GET } = await OGImageRoute({
 				? { bgImage: { path: bg, fit: 'cover' as const } }
 				: {
 						bgGradient: [
-							[20, 19, 17],
-							[32, 30, 27],
+							[9, 9, 11],
+							[24, 24, 27],
 						] as [number, number, number][],
 					}),
+			border: { color: [251, 146, 60], width: 12, side: 'inline-start' },
 			padding: 60,
 			font: {
 				title: { color: [250, 250, 250], size: 64, weight: 'Bold' },

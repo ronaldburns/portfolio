@@ -3,7 +3,7 @@ import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
 ---
 
-<header class="border-b border-zinc-800/80 sticky top-0 z-20 bg-zinc-950">
+<header class="border-b border-zinc-800/80 backdrop-blur sticky top-0 z-20 bg-zinc-950/70">
 	<nav class="max-w-3xl mx-auto flex items-center justify-between px-4 h-14 gap-3">
 		<a href="/" class="font-display text-lg text-zinc-100 hover:text-white shrink-0">{SITE_TITLE}</a>
 		<div class="flex items-center gap-1 text-sm">
@@ -30,8 +30,8 @@ import HeaderLink from './HeaderLink.astro';
 </header>
 
 <!-- Search modal (driven by the Pagefind JS API) -->
-<div id="search-modal" class="fixed inset-0 z-50 hidden items-start justify-center p-4 sm:pt-24 bg-black/60">
-	<div id="search-panel" class="w-full max-w-xl rounded-xl border border-zinc-700 bg-zinc-950 shadow-2xl overflow-hidden">
+<div id="search-modal" class="fixed inset-0 z-50 hidden items-start justify-center p-4 sm:pt-24 bg-zinc-950/80 backdrop-blur-sm">
+	<div id="search-panel" class="w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-950/95 backdrop-blur-xl shadow-2xl ring-1 ring-amber-400/5 overflow-hidden">
 		<div class="group flex items-center gap-2 border-b border-zinc-800 px-4">
 			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-zinc-500 group-focus-within:text-amber-400 transition-colors shrink-0" aria-hidden="true">
 				<circle cx="11" cy="11" r="7"></circle>
@@ -54,7 +54,7 @@ import HeaderLink from './HeaderLink.astro';
 			<span class="flex items-center gap-1">
 				<kbd class="border border-zinc-700 rounded px-1 text-zinc-400">esc</kbd> close
 			</span>
-			<span class="ml-auto font-mono text-zinc-600">Pagefind</span>
+			<span class="ml-auto font-display text-zinc-600">Pagefind</span>
 		</div>
 	</div>
 </div>

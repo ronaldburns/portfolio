@@ -58,7 +58,7 @@ const jsonLd = {
 			<main>
 				<article data-pagefind-body>
 					<header class="mb-8">
-						<p class="font-mono text-xs text-zinc-500">
+						<p class="text-sm text-zinc-500">
 							<FormattedDate date={date} />
 							{minutesRead && <span> · {minutesRead}</span>}
 							{lastModified && <span> · updated <FormattedDate date={lastModified} /></span>}
@@ -93,7 +93,7 @@ const jsonLd = {
 					</div>
 				</article>
 
-				<nav class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-16 pt-8 border-t border-zinc-800">
+				<nav class="grid sm:grid-cols-2 gap-4 mt-16 pt-8 border-t border-zinc-800">
 					{
 						older ? (
 							<a
@@ -129,7 +129,7 @@ const jsonLd = {
 				toc.length >= 3 && (
 					<aside class="hidden xl:block absolute left-full top-12 ml-6 w-52 h-full" aria-label="Table of contents">
 						<nav id="toc" class="sticky top-20 text-sm">
-							<p class="font-mono text-xs text-zinc-500 mb-3">On this page</p>
+							<p class="uppercase tracking-widest text-xs text-zinc-500 mb-3">On this page</p>
 							<ul class="space-y-2 border-l border-zinc-800">
 								{toc.map((h) => (
 									<li>
