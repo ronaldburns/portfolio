@@ -39,6 +39,14 @@ const ogImage = ogOverride
 
 <Font cssVariable="--font-atkinson" preload />
 <ClientRouter />
+<script>
+	// Client-side navigation parses each page in a detached document and moves it in. A video that
+	// starts loading there arrives broken, its controls greyed out until a reload. A fresh copy made in
+	// the live page loads the way a reload would. Calling load() instead makes Chrome ignore preload="none".
+	document.addEventListener('astro:after-swap', () => {
+		document.querySelectorAll('video').forEach((video) => video.replaceWith(video.cloneNode(true)));
+	});
+</script>
 
 <link rel="canonical" href={canonicalURL} />
 
