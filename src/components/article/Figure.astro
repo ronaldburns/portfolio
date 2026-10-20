@@ -1,0 +1,59 @@
+---
+// An image with an optional caption. Clicking it opens the full-size viewer.
+import '../../styles/article.css';
+import { imageUrl, originalUrl, srcSet } from '../../lib/images';
+
+interface Props {
+	src: string;
+	alt: string;
+	width: number;
+	height: number;
+	caption?: string;
+	/** Crops the image in the article, e.g. { aspect: '21/9', position: '50% 30%' }. The viewer still shows all of it. */
+	crop?: { aspect: string; position?: string };
+	/** Set to false to turn the full-size viewer off. */
+	zoom?: boolean;
+}
+
+const { src, alt, width, height, caption, crop, zoom = true } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+const srcset = srcSet(src);
+const cropStyle = crop
+	? `aspect-ratio: ${crop.aspect}; object-fit: cover; object-position: ${crop.position ?? '50% 50%'};`
+	: undefined;
+const Frame = zoom ? 'button' : 'div';
+const frameProps = zoom
+	? { type: 'button', 'data-ar-zoom': originalUrl(src), 'aria-haspopup': 'dialog' }
+	: {};
+---
+
+<figure class="ar-block ar-figure">
+	<Frame class:list={['ar-frame', { 'ar-zoom': zoom }]} {...frameProps}>
+		<img
+			class="ar-img"
+			src={imageUrl(src)}
+			srcset={srcset}
+			sizes={srcset ? '(min-width: 48rem) 46rem, calc(100vw - 2rem)' : undefined}
+			alt={alt}
+			width={width}
+			height={height}
+			loading="lazy"
+			decoding="async"
+			style={cropStyle}
+		/>
+		{
+			zoom && (
+				<span class="ar-zoom__hint" aria-hidden="true">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+					</svg>
+				</span>
+			)
+		}
+	</Frame>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>
+
+<script>
+	import './lightbox';
+</script>

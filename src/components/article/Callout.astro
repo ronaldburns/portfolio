@@ -1,0 +1,35 @@
+---
+// An aside set off from the body text. The title is a plain sentence, never "Label:".
+import '../../styles/article.css';
+
+interface Props {
+	title?: string;
+	tone?: 'note' | 'warn' | 'win';
+}
+
+const { title, tone = 'note' } = Astro.props;
+const icons = {
+	note: '<circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" />',
+	warn: '<path d="M12 4 2.8 19.5h18.4L12 4Z" /><path d="M12 10v4M12 17h.01" />',
+	win: '<circle cx="12" cy="12" r="9" /><path d="m8.5 12.5 2.5 2.5 4.5-5" />',
+};
+const icon = icons[tone] ?? icons.note;
+---
+
+<div class="ar-block ar-callout" data-tone={tone} role="note">
+	<svg
+		class="ar-callout__icon"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		aria-hidden="true"
+		set:html={icon}
+	/>
+	<div>
+		{title && <p class="ar-callout__title">{title}</p>}
+		<div class="ar-callout__body"><slot /></div>
+	</div>
+</div>

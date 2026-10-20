@@ -1,0 +1,30 @@
+---
+// Boxes joined by arrows. Up to four steps run left to right on wider screens. Longer flows, and
+// every flow on a phone, run top to bottom.
+import '../../styles/article.css';
+
+interface Props {
+	steps: { title: string; body?: string }[];
+	caption?: string;
+}
+
+const { steps = [], caption } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+---
+
+<figure class="ar-block ar-figure ar-flow" data-long={steps.length > 4 ? '' : undefined}>
+	<ol class="ar-flow__steps" role="list">
+		{
+			steps.map((step, i) => (
+				<li class="ar-flow__step">
+					<span class="ar-flow__index" aria-hidden="true" data-pagefind-ignore>
+						{String(i + 1).padStart(2, '0')}
+					</span>
+					<span class="ar-flow__title">{step.title}</span>
+					{step.body && <span class="ar-flow__body">{step.body}</span>}
+				</li>
+			))
+		}
+	</ol>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>

@@ -1,0 +1,76 @@
+---
+// An image with numbered markers. The legend underneath repeats every label, and it is the text
+// alternative for the markers, so each label should make sense on its own.
+import '../../styles/article.css';
+import { imageUrl, originalUrl, srcSet } from '../../lib/images';
+
+interface Point {
+	/** Percent of the image width, from the left. */
+	x: number;
+	/** Percent of the image height, from the top. */
+	y: number;
+	label: string;
+}
+
+interface Props {
+	src: string;
+	alt: string;
+	width: number;
+	height: number;
+	points: Point[];
+	caption?: string;
+}
+
+const { src, alt, width, height, points = [], caption } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+const srcset = srcSet(src);
+// Keep markers fully inside the frame even when a point sits on the edge.
+const place = (value: number) => `clamp(0.75rem, ${value}%, 100% - 0.75rem)`;
+---
+
+<figure class="ar-block ar-figure ar-annotated">
+	<button type="button" class="ar-frame ar-zoom" data-ar-zoom={originalUrl(src)} aria-haspopup="dialog">
+		<img
+			class="ar-img"
+			src={imageUrl(src)}
+			srcset={srcset}
+			sizes={srcset ? '(min-width: 48rem) 46rem, calc(100vw - 2rem)' : undefined}
+			alt={alt}
+			width={width}
+			height={height}
+			loading="lazy"
+			decoding="async"
+		/>
+		<span class="ar-annotated__markers" aria-hidden="true" data-pagefind-ignore>
+			{
+				points.map((point, i) => (
+					<span class="ar-marker" style={`left: ${place(point.x)}; top: ${place(point.y)};`}>
+						{i + 1}
+					</span>
+				))
+			}
+		</span>
+		<span class="ar-zoom__hint" aria-hidden="true">
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+			</svg>
+		</span>
+	</button>
+	<ol class="ar-legend" role="list">
+		{
+			points.map((point, i) => (
+				<li>
+					<span class="ar-marker" aria-hidden="true" data-pagefind-ignore>
+						{i + 1}
+					</span>
+					<span>{point.label}</span>
+				</li>
+			))
+		}
+	</ol>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>
+
+<script>
+	import './lightbox';
+</script>

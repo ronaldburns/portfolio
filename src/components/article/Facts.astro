@@ -1,0 +1,21 @@
+---
+// A compact at-a-glance strip, usually right after the lede.
+import '../../styles/article.css';
+
+interface Props {
+	items: { label: string; value: string }[];
+}
+
+const { items = [] } = Astro.props;
+---
+
+<dl class="ar-block ar-facts">
+	{
+		items.map((item) => (
+			<div class="ar-fact">
+				<dt>{item.label}</dt>
+				<dd>{item.value}</dd>
+			</div>
+		))
+	}
+</dl>

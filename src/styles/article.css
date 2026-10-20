@@ -1,0 +1,706 @@
+@reference "./global.css";
+
+/*
+ * Long-form article styles. The components in src/components/article import this file, so it
+ * only ships on pages that use them. Every rule is scoped to `article .content` or to an `ar-`
+ * class, which keeps older posts and the rest of the page as they were. Colors, fonts and radii
+ * are read from the Tailwind theme at build time, so a re-theme carries through with no edits here.
+ */
+
+article .content,
+.ar-lightbox {
+	--ar-ink-strong: --theme(--color-zinc-50 inline);
+	--ar-ink-bright: --theme(--color-zinc-200 inline);
+	--ar-ink-muted: --theme(--color-zinc-400 inline);
+	--ar-rule: --theme(--color-zinc-800 inline);
+	--ar-rule-strong: --theme(--color-zinc-700 inline);
+	--ar-panel: --theme(--color-zinc-900 inline);
+	--ar-ground: --theme(--color-zinc-950 inline);
+	--ar-warn: --theme(--color-amber-400 inline);
+	--ar-win: --theme(--color-green-400 inline);
+	--ar-mono: --theme(--font-mono inline);
+	--ar-radius: --theme(--radius-lg inline);
+	--ar-radius-md: --theme(--radius-md inline);
+	--ar-radius-sm: --theme(--radius-sm inline);
+	/* About 70 characters a line. The body font's `ch` is wide, so 70ch would barely limit anything. */
+	--ar-measure: 32em;
+	--ar-arrow-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h17M14 6l6 6-6 6'/%3E%3C/svg%3E");
+	--ar-arrow-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v17M6 14l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* --- Body text ------------------------------------------------------------ */
+
+article .content {
+	font-size: 1.0625rem;
+	line-height: 1.7;
+	font-kerning: normal;
+	overflow-wrap: break-word;
+	counter-reset: ar-fig;
+}
+@media (min-width: 40rem) {
+	article .content {
+		font-size: 1.125rem;
+	}
+}
+article .content > :is(p, ul, ol, blockquote) {
+	max-width: var(--ar-measure);
+}
+article .content :is(p, li) {
+	text-wrap: pretty;
+}
+article .content :is(h2, h3, h4) {
+	text-wrap: balance;
+}
+/* A heading sits closer to the text it introduces than to the text above it. */
+article .content :is(h2, h3, h4) + * {
+	margin-top: 0.75rem;
+}
+article .content :is(ul, ol):not([class]) > li + li {
+	margin-top: 0.4em;
+}
+article .content blockquote {
+	hanging-punctuation: first last;
+}
+article .content kbd {
+	display: inline-block;
+	padding: 0.1em 0.45em;
+	border: 1px solid var(--ar-rule-strong);
+	border-bottom-width: 2px;
+	border-radius: var(--ar-radius-sm);
+	background: var(--ar-panel);
+	color: var(--ar-ink-bright);
+	font-family: var(--ar-mono);
+	font-size: 0.78em;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+
+/* --- Tables --------------------------------------------------------------- */
+
+/* astro.config.mjs wraps each markdown table in .ar-table, so a wide one scrolls sideways on a phone. */
+article .content .ar-table {
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+}
+article .content table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	font-variant-numeric: tabular-nums lining-nums;
+}
+article .content th {
+	padding: 0 0.875rem 0.5rem;
+	border-bottom: 1px solid var(--ar-rule-strong);
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	font-weight: 500;
+	vertical-align: bottom;
+}
+/* Leave aligned columns alone so `---:` in the markdown still right-aligns numbers. */
+article .content th:not([align]) {
+	text-align: start;
+}
+article .content td {
+	padding: 0.6rem 0.875rem;
+	border-bottom: 1px solid var(--ar-rule);
+	vertical-align: top;
+}
+article .content :is(th, td):first-child {
+	padding-left: 0;
+}
+article .content :is(th, td):last-child {
+	padding-right: 0;
+}
+
+/* --- Blocks and figures --------------------------------------------------- */
+
+article .content > .ar-block {
+	margin-block: 2rem;
+}
+article .content > .ar-figure {
+	margin-block: 2.5rem;
+}
+article .content > .ar-block:first-child {
+	margin-top: 0;
+}
+article .content :is(h2, h3, h4) + .ar-block {
+	margin-top: 1.25rem;
+}
+
+/* Only captioned figures are numbered, so "Fig. 3" in the text always points at something visible. */
+article .content .ar-caption {
+	counter-increment: ar-fig;
+	max-width: 72ch;
+	margin-top: 0.75rem;
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.65;
+	text-wrap: balance;
+	overflow-wrap: anywhere;
+}
+article .content .ar-caption::before {
+	content: 'Fig. ' counter(ar-fig);
+	margin-right: 0.9em;
+	color: var(--accent-soft);
+	white-space: nowrap;
+}
+
+article .content .ar-frame {
+	position: relative;
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	border: 1px solid var(--ar-rule);
+	border-radius: var(--ar-radius);
+	background: var(--ar-panel);
+}
+article .content :is(.ar-img, .ar-video) {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+/* Images never take clicks themselves. The button around them does, which also stops the
+   layout's older image overlay from opening on top of the viewer. */
+article .content .ar-img {
+	pointer-events: none;
+	user-select: none;
+}
+
+article .content .ar-zoom {
+	padding: 0;
+	text-align: inherit;
+	cursor: zoom-in;
+}
+article .content .ar-zoom__hint {
+	position: absolute;
+	top: 0.625rem;
+	right: 0.625rem;
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: var(--ar-radius-md);
+	background: color-mix(in oklab, var(--ar-ground) 72%, transparent);
+	color: var(--ar-ink-strong);
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+article .content .ar-zoom:is(:hover, :focus-visible) .ar-zoom__hint {
+	opacity: 1;
+}
+article .content :is(.ar-zoom, .ar-loop__toggle):focus-visible,
+article .content .ar-compare__range:focus-visible + .ar-compare__handle .ar-compare__knob {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+
+/* --- Compare -------------------------------------------------------------- */
+
+article .content .ar-compare__frame {
+	cursor: ew-resize;
+	touch-action: pan-y pinch-zoom;
+	user-select: none;
+	-webkit-user-select: none;
+}
+article .content .ar-compare__after {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	object-fit: cover;
+	clip-path: inset(0 0 0 var(--ar-pos, 50%));
+}
+article .content .ar-compare__label {
+	position: absolute;
+	top: 0.75rem;
+	max-width: calc(50% - 1.5rem);
+	padding: 0.25rem 0.55rem;
+	border-radius: var(--ar-radius-md);
+	background: color-mix(in oklab, var(--ar-ground) 75%, transparent);
+	color: var(--ar-ink-strong);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.4;
+	pointer-events: none;
+}
+article .content .ar-compare__label[data-side='before'] {
+	left: 0.75rem;
+}
+article .content .ar-compare__label[data-side='after'] {
+	right: 0.75rem;
+	text-align: right;
+}
+/* The range input covers the frame for keyboard and screen reader use. Pointer input is handled
+   on the frame in Compare.astro, so a vertical swipe on a phone still scrolls the page. */
+article .content .ar-compare__range {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+article .content .ar-compare__handle {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--ar-pos, 50%);
+	width: 2px;
+	margin-left: -1px;
+	background: var(--ar-ink-strong);
+	box-shadow: 0 0 0 1px color-mix(in oklab, var(--ar-ground) 35%, transparent);
+	pointer-events: none;
+}
+article .content .ar-compare__knob {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	translate: -50% -50%;
+	border: 2px solid var(--ar-ink-strong);
+	border-radius: 9999px;
+	background: var(--ar-ground);
+	color: var(--ar-ink-strong);
+	box-shadow: 0 2px 12px color-mix(in oklab, var(--ar-ground) 60%, transparent);
+}
+
+/* --- Loop ----------------------------------------------------------------- */
+
+article .content .ar-loop__toggle {
+	position: absolute;
+	right: 0.75rem;
+	bottom: 0.75rem;
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border: 1px solid color-mix(in oklab, var(--ar-ink-strong) 25%, transparent);
+	border-radius: 9999px;
+	background: color-mix(in oklab, var(--ar-ground) 72%, transparent);
+	color: var(--ar-ink-strong);
+	cursor: pointer;
+	transition: border-color 150ms ease;
+}
+article .content .ar-loop__toggle:hover {
+	border-color: var(--accent);
+}
+article .content .ar-loop__toggle[hidden],
+article .content .ar-loop[data-playing] .ar-loop__play,
+article .content .ar-loop:not([data-playing]) .ar-loop__pause {
+	display: none;
+}
+
+/* --- Annotated ------------------------------------------------------------ */
+
+article .content .ar-annotated__markers {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+article .content .ar-marker {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	border-radius: 9999px;
+	background: var(--accent);
+	color: var(--ar-ground);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+article .content .ar-annotated__markers .ar-marker {
+	position: absolute;
+	translate: -50% -50%;
+	box-shadow:
+		0 0 0 2px color-mix(in oklab, var(--ar-ground) 70%, transparent),
+		0 2px 8px color-mix(in oklab, var(--ar-ground) 60%, transparent);
+}
+article .content .ar-legend {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+	gap: 0.5rem 1.5rem;
+	margin: 0.875rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+}
+article .content .ar-legend li {
+	display: flex;
+	gap: 0.6rem;
+	align-items: baseline;
+}
+article .content .ar-legend .ar-marker {
+	width: 1.25rem;
+	height: 1.25rem;
+	font-size: 0.6875rem;
+}
+
+/* --- Gallery -------------------------------------------------------------- */
+
+article .content .ar-gallery__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+@media (min-width: 40rem) {
+	article .content .ar-gallery__grid {
+		grid-template-columns: repeat(var(--ar-cols, 2), minmax(0, 1fr));
+	}
+}
+article .content .ar-gallery__label {
+	display: block;
+	margin-top: 0.5rem;
+	color: var(--ar-ink-bright);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.45;
+}
+
+/* --- Callout and Disclaimer ----------------------------------------------- */
+
+article .content .ar-callout {
+	--ar-tone: var(--ar-ink-muted);
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.85rem;
+	padding: 1rem 1.25rem 1.05rem 1rem;
+	border: 1px solid var(--ar-rule);
+	border-left: 3px solid var(--ar-tone);
+	border-radius: 0 var(--ar-radius-md) var(--ar-radius-md) 0;
+	background: color-mix(in oklab, var(--ar-panel) 60%, transparent);
+	font-size: 1rem;
+	line-height: 1.65;
+}
+article .content .ar-callout[data-tone='warn'] {
+	--ar-tone: var(--ar-warn);
+}
+article .content .ar-callout[data-tone='win'] {
+	--ar-tone: var(--ar-win);
+}
+article .content :is(.ar-callout__icon, .ar-disclaimer__icon) {
+	width: 1.25rem;
+	height: 1.25rem;
+	margin-top: 0.2rem;
+	color: var(--ar-tone, var(--ar-ink-muted));
+}
+article .content .ar-callout__title {
+	margin-bottom: 0.3rem;
+	color: var(--ar-ink-strong);
+	font-weight: 700;
+	line-height: 1.45;
+	text-wrap: balance;
+}
+article .content :is(.ar-callout__body, .ar-disclaimer__body) > * + * {
+	margin-top: 0.75em;
+}
+
+article .content .ar-disclaimer {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.75rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px dashed var(--ar-rule-strong);
+	border-radius: var(--ar-radius-md);
+	color: var(--ar-ink-muted);
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+article .content .ar-disclaimer__icon {
+	width: 1.125rem;
+	height: 1.125rem;
+	margin-top: 0.1rem;
+}
+article .content .ar-disclaimer__title {
+	margin-bottom: 0.25rem;
+	color: var(--ar-ink-bright);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+/* --- Stats and Facts ------------------------------------------------------ */
+
+article .content .ar-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+	gap: 1.25rem 1.5rem;
+}
+article .content .ar-stat {
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: flex-end;
+	gap: 0.45rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--ar-rule-strong);
+}
+article .content .ar-stat dd {
+	color: var(--ar-ink-strong);
+	font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	/* Proportional figures on purpose. At this size tabular ones leave wide gaps around a 1 or a decimal
+	   point, and the numbers in a stat row never line up in a column anyway. */
+	font-variant-numeric: proportional-nums lining-nums;
+	overflow-wrap: anywhere;
+}
+article .content .ar-stat dt {
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.45;
+}
+
+article .content .ar-facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+	gap: 0.9rem 1.25rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--ar-rule);
+	border-radius: var(--ar-radius);
+	background: color-mix(in oklab, var(--ar-panel) 45%, transparent);
+}
+article .content .ar-fact dt {
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.6875rem;
+	line-height: 1.4;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+article .content .ar-fact dd {
+	margin-top: 0.2rem;
+	color: var(--ar-ink-bright);
+	font-size: 0.9375rem;
+	line-height: 1.45;
+}
+
+/* --- Flow ----------------------------------------------------------------- */
+
+article .content .ar-flow__steps {
+	display: grid;
+	gap: 2rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+article .content .ar-flow__step {
+	position: relative;
+	padding: 0.8rem 1rem 0.9rem;
+	border: 1px solid var(--ar-rule-strong);
+	border-radius: var(--ar-radius-md);
+	background: color-mix(in oklab, var(--ar-panel) 70%, transparent);
+}
+article .content .ar-flow__step:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	width: 1.25rem;
+	height: 2rem;
+	translate: -50% 0;
+	background: var(--ar-ink-muted);
+	-webkit-mask: var(--ar-arrow-down) center / 1.25rem no-repeat;
+	mask: var(--ar-arrow-down) center / 1.25rem no-repeat;
+}
+@media (min-width: 40rem) {
+	article .content .ar-flow:not([data-long]) .ar-flow__steps {
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		gap: 1.75rem;
+	}
+	article .content .ar-flow:not([data-long]) .ar-flow__step:not(:last-child)::after {
+		top: 50%;
+		left: 100%;
+		width: 1.75rem;
+		height: 1.25rem;
+		translate: 0 -50%;
+		-webkit-mask-image: var(--ar-arrow-right);
+		mask-image: var(--ar-arrow-right);
+	}
+	article .content .ar-flow[data-long] .ar-flow__steps {
+		max-width: 34rem;
+	}
+}
+article .content .ar-flow__index {
+	display: block;
+	margin-bottom: 0.4rem;
+	color: var(--accent-soft);
+	font-family: var(--ar-mono);
+	font-size: 0.6875rem;
+	line-height: 1;
+}
+article .content .ar-flow__title {
+	display: block;
+	color: var(--ar-ink-strong);
+	font-size: 0.9375rem;
+	font-weight: 700;
+	line-height: 1.35;
+}
+article .content .ar-flow__body {
+	display: block;
+	margin-top: 0.3rem;
+	color: var(--ar-ink-muted);
+	font-size: 0.8125rem;
+	line-height: 1.5;
+}
+
+/* --- Pull quote and lede -------------------------------------------------- */
+
+article .content .ar-pullquote {
+	position: relative;
+	padding-top: 1.25rem;
+}
+article .content .ar-pullquote::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 2.5rem;
+	height: 3px;
+	background: var(--accent);
+}
+article .content .ar-pullquote blockquote {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	color: var(--ar-ink-strong);
+	font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.75rem);
+	font-style: normal;
+	line-height: 1.3;
+	text-wrap: balance;
+	hanging-punctuation: first last;
+}
+article .content .ar-pullquote blockquote > * + * {
+	margin-top: 0.5em;
+}
+article .content .ar-pullquote__cite {
+	margin-top: 0.9rem;
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.5;
+}
+
+article .content .ar-lede {
+	color: var(--ar-ink-bright);
+	font-size: clamp(1.1875rem, 1.05rem + 0.6vw, 1.375rem);
+	line-height: 1.55;
+	text-wrap: pretty;
+}
+article .content .ar-lede > * + * {
+	margin-top: 0.75em;
+}
+
+/* --- Full-size image viewer (Figure, Gallery, Annotated) ------------------ */
+
+.ar-lightbox {
+	width: 100vw;
+	height: 100vh;
+	height: 100dvh;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	padding: 3.75rem 1rem 1.25rem;
+	border: 0;
+	background: transparent;
+	color: var(--ar-ink-bright);
+	cursor: zoom-out;
+	overscroll-behavior: contain;
+}
+.ar-lightbox[open] {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: ar-fade 160ms ease-out;
+}
+.ar-lightbox::backdrop {
+	background: color-mix(in oklab, --theme(--color-zinc-950 inline) 94%, transparent);
+	animation: ar-fade 160ms ease-out;
+}
+@media (min-width: 40rem) {
+	.ar-lightbox {
+		padding: 4rem 2.5rem 2rem;
+	}
+}
+.ar-lightbox__figure {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.85rem;
+	max-width: 100%;
+	max-height: 100%;
+	margin: 0;
+}
+.ar-lightbox__img {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: calc(100dvh - 9rem);
+	border-radius: var(--ar-radius-md);
+	cursor: auto;
+}
+.ar-lightbox__caption {
+	max-width: 72ch;
+	color: var(--ar-ink-muted);
+	font-family: var(--ar-mono);
+	font-size: 0.75rem;
+	line-height: 1.6;
+	text-align: center;
+	text-wrap: balance;
+	cursor: auto;
+}
+.ar-lightbox__close {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 1px solid var(--ar-rule-strong);
+	border-radius: 9999px;
+	background: var(--ar-panel);
+	color: var(--ar-ink-strong);
+	cursor: pointer;
+}
+.ar-lightbox__close:hover {
+	border-color: var(--accent);
+}
+.ar-lightbox__close:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+html:has(.ar-lightbox[open]) {
+	overflow: hidden;
+}
+@keyframes ar-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ar-lightbox[open],
+	.ar-lightbox::backdrop {
+		animation: none;
+	}
+	article .content :is(.ar-zoom__hint, .ar-loop__toggle) {
+		transition: none;
+	}
+}

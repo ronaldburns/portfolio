@@ -1,0 +1,111 @@
+---
+// A short silent clip that loops. It plays only while on screen, has a pause button, and starts
+// paused for readers who ask for reduced motion.
+import '../../styles/article.css';
+import { imageUrl, originalUrl } from '../../lib/images';
+
+interface Props {
+	src: string;
+	poster: string;
+	width: number;
+	height: number;
+	caption?: string;
+	/** Text alternative for screen readers. It is not shown on the page. */
+	label?: string;
+	/** Optional webm version, offered before the mp4. */
+	webm?: string;
+}
+
+const { src, poster, width, height, caption, label, webm } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+const name = label ?? 'clip';
+---
+
+<figure class="ar-block ar-figure ar-loop" data-ar-loop>
+	<div class="ar-frame">
+		<video
+			class="ar-video"
+			muted
+			loop
+			playsinline
+			preload="metadata"
+			poster={imageUrl(poster)}
+			width={width}
+			height={height}
+			aria-label={label}
+		>
+			{webm && <source src={originalUrl(webm)} type="video/webm" />}
+			<source src={originalUrl(src)} type="video/mp4" />
+		</video>
+		<button
+			type="button"
+			class="ar-loop__toggle"
+			aria-label={`Play ${name}`}
+			data-name={name}
+			data-pagefind-ignore
+			hidden
+		>
+			<svg class="ar-loop__play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+				<path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" />
+			</svg>
+			<svg class="ar-loop__pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+				<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" />
+			</svg>
+		</button>
+	</div>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>
+
+<script>
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+	// data-want holds what the reader asked for. Scrolling away pauses a clip without changing it.
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (const entry of entries) {
+				const video = entry.target as HTMLVideoElement;
+				const figure = video.closest<HTMLElement>('[data-ar-loop]');
+				if (entry.isIntersecting && figure?.dataset.want === 'play') video.play().catch(() => {});
+				else if (!entry.isIntersecting) video.pause();
+			}
+		},
+		{ threshold: 0.25 },
+	);
+
+	function setup(figure: HTMLElement) {
+		const video = figure.querySelector('video');
+		const button = figure.querySelector<HTMLButtonElement>('.ar-loop__toggle');
+		if (!video || !button) return;
+		figure.dataset.ready = '';
+		figure.dataset.want = reducedMotion.matches ? 'pause' : 'play';
+		video.muted = true;
+
+		const sync = () => {
+			const playing = !video.paused;
+			figure.toggleAttribute('data-playing', playing);
+			button.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} ${button.dataset.name}`);
+		};
+		video.addEventListener('play', sync);
+		video.addEventListener('pause', sync);
+		button.addEventListener('click', () => {
+			if (video.paused) {
+				figure.dataset.want = 'play';
+				video.play().catch(() => {});
+			} else {
+				figure.dataset.want = 'pause';
+				video.pause();
+			}
+		});
+		button.hidden = false;
+		sync();
+		observer.observe(video);
+	}
+
+	function init() {
+		document.querySelectorAll<HTMLElement>('[data-ar-loop]:not([data-ready])').forEach(setup);
+	}
+
+	init();
+	document.addEventListener('astro:page-load', init);
+	document.addEventListener('astro:before-swap', () => observer.disconnect());
+</script>

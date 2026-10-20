@@ -25,6 +25,22 @@ function transformerCodeTitle() {
 	};
 }
 
+// Wrap each markdown table in a scroll box, so a wide table scrolls sideways on a phone instead of
+// spilling out of the column. Only src/styles/article.css styles the wrapper, so older posts look the same.
+function rehypeTableScroll() {
+	const wrap = (node) => {
+		if (!node.children) return;
+		node.children = node.children.map((child) => {
+			if (child.type === 'element' && child.tagName === 'table') {
+				return { type: 'element', tagName: 'div', properties: { className: ['ar-table'] }, children: [child] };
+			}
+			wrap(child);
+			return child;
+		});
+	};
+	return (tree) => wrap(tree);
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://ronaldburns.dev',
@@ -32,6 +48,7 @@ export default defineConfig({
 
   markdown: {
     remarkPlugins: [remarkReadingTime],
+    rehypePlugins: [rehypeTableScroll],
     shikiConfig: {
       theme: 'github-dark',
       transformers: [

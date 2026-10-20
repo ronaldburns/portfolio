@@ -1,0 +1,63 @@
+---
+// A labelled grid of related views, such as G-buffer passes or A/B/C variants. Each one opens in
+// the full-size viewer. Phones always get two columns.
+import '../../styles/article.css';
+import { imageUrl, originalUrl, srcSet } from '../../lib/images';
+
+interface Item {
+	src: string;
+	alt: string;
+	label?: string;
+	width: number;
+	height: number;
+}
+
+interface Props {
+	cols?: 2 | 3 | 4;
+	items: Item[];
+	caption?: string;
+}
+
+const { cols = 2, items = [], caption } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+const sizes = `(min-width: 48rem) ${Math.round(46 / cols)}rem, 50vw`;
+---
+
+<figure class="ar-block ar-figure ar-gallery" style={`--ar-cols: ${cols}`}>
+	<ul class="ar-gallery__grid" role="list">
+		{
+			items.map((item) => {
+				const srcset = srcSet(item.src);
+				return (
+					<li>
+						<button
+							type="button"
+							class="ar-frame ar-zoom"
+							data-ar-zoom={originalUrl(item.src)}
+							data-ar-caption={item.label}
+							aria-haspopup="dialog"
+						>
+							<img
+								class="ar-img"
+								src={imageUrl(item.src, 960)}
+								srcset={srcset}
+								sizes={srcset ? sizes : undefined}
+								alt={item.alt}
+								width={item.width}
+								height={item.height}
+								loading="lazy"
+								decoding="async"
+							/>
+						</button>
+						{item.label && <span class="ar-gallery__label">{item.label}</span>}
+					</li>
+				);
+			})
+		}
+	</ul>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>
+
+<script>
+	import './lightbox';
+</script>

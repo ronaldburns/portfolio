@@ -1,0 +1,21 @@
+---
+// A row of big numbers, each with a short label.
+import '../../styles/article.css';
+
+interface Props {
+	items: { value: string | number; label: string }[];
+}
+
+const { items = [] } = Astro.props;
+---
+
+<dl class="ar-block ar-stats">
+	{
+		items.map((item) => (
+			<div class="ar-stat">
+				<dt>{item.label}</dt>
+				<dd class="font-display">{item.value}</dd>
+			</div>
+		))
+	}
+</dl>

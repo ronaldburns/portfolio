@@ -1,0 +1,33 @@
+---
+// A clip with sound. Native controls, never autoplays, and loads nothing until the reader presses play.
+import '../../styles/article.css';
+import { imageUrl, originalUrl } from '../../lib/images';
+
+interface Props {
+	src: string;
+	poster: string;
+	width: number;
+	height: number;
+	caption?: string;
+}
+
+const { src, poster, width, height, caption } = Astro.props;
+const hasCaption = Boolean(caption) || Astro.slots.has('caption');
+---
+
+<figure class="ar-block ar-figure ar-player">
+	<div class="ar-frame">
+		<video
+			class="ar-video"
+			src={originalUrl(src)}
+			poster={imageUrl(poster)}
+			width={width}
+			height={height}
+			controls
+			playsinline
+			preload="none"
+		>
+		</video>
+	</div>
+	{hasCaption && <figcaption class="ar-caption">{caption ?? <slot name="caption" />}</figcaption>}
+</figure>
