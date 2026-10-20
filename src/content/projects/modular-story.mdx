@@ -1,0 +1,344 @@
+---
+title: "ModularStory, a story director on StateTree"
+description: "A StateTree plugin that runs the story of the VR game I'm building. Finished beats skip themselves after a load, gates wait without ticking, and effects undo themselves when their state ends."
+date: "Oct 20, 2026"
+image: projects/modular-story/hero.jpg
+tags: "Unreal Engine, C++, StateTree, Editor tools, VR, Gameplay"
+featured: true
+published: true
+---
+
+import Lede from '../../components/article/Lede.astro';
+import Facts from '../../components/article/Facts.astro';
+import Loop from '../../components/article/Loop.astro';
+import Figure from '../../components/article/Figure.astro';
+import Annotated from '../../components/article/Annotated.astro';
+import Flow from '../../components/article/Flow.astro';
+import Callout from '../../components/article/Callout.astro';
+import Stats from '../../components/article/Stats.astro';
+
+<Lede>Every chapter of the VR game I'm building is one StateTree asset that reads top to bottom as its beats. A tree waiting on the player doesn't tick, a load is a restart in which every finished beat skips itself, and 62 automation tests cover both.</Lede>
+
+<Loop
+  src="projects/modular-story/story-run.mp4"
+  poster="projects/modular-story/story-run.jpg"
+  width={1920}
+  height={1080}
+  label="Play In Editor"
+  caption="The gym's test chapter. Story.State reports the mug as held, so the Grab gate passes. Took Mug waits a second, then Lights Out's effect turns the lamp off. I drew the panel from this run's StateTree log."
+/>
+
+<Facts items={[
+  { label: "Engine", value: "Unreal Engine 6" },
+  { label: "Built on", value: "StateTree and GameplayStateTree" },
+  { label: "Platforms", value: "PC VR and standalone headsets" },
+  { label: "Plugins", value: "ModularStory, ModularStorySUDS, StateTree​Toolset​Extensions" },
+  { label: "Tests", value: "62 for the story, 7 for the SUDS bridge" },
+]} />
+
+## What I built on
+
+StateTree is Epic's hierarchical state machine, with states, tasks that run together inside a state, enter conditions, transitions, linked assets, an editor and a debugger. The GameplayStateTree plugin adds a component that runs a tree on an actor.
+
+ModularStory is the story layer on top. It has its own schema, a director that only runs story trees, a table of facts, 17 story tasks and a condition, handles that name actors by tag, an editor module and four console commands. ModularStorySUDS mirrors the facts into SUDS Pro, Old Doorways' dialogue system, and StateTreeToolsetExtensions adds the transition tools that Epic's StateTree toolset for the editor's MCP server leaves out.
+
+## Why level scripts don't hold up
+
+The story is linear but reactive. Beats come in order, and each one waits on the player to walk somewhere, pick something up, look at something long enough, or nod. While a beat waits, the world reacts with a sound looping at a door or a lamp coming on.
+
+The stock answer is level Blueprints, actor Blueprints and flags. Logic spread over actors gives no top-to-bottom view of a chapter, and one set in my game hosts several chapters, so its actors would carry all their wiring. Saving is worse. Unreal has no whole-world save, so story state scattered across actors means writing one.
+
+On a standalone headset, a gate that's only waiting has to cost nothing per frame. The scale is small enough for one person.
+
+<Stats items={[
+  { value: "~60", label: "beats so far, 100 at most" },
+  { value: "~10", label: "chapters" },
+  { value: "1", label: "person writing them" },
+]} />
+
+## Options I turned down
+
+The first design on the table was Blueprint beat actors. I turned it down, because I didn't want huge Blueprints on random actors running the level's flow. So I set requirements first and scored six options against them, in plan-days estimated before any code.
+
+| Option | Estimate | Why it lost |
+|---|---|---|
+| Blueprint beat actors | 7.5 days | Logic on actors again, and no single asset per chapter |
+| Valve-style entity I/O, as in Hammer | ~10 days | The map is the script, and it leans on a whole-world save |
+| Flow Graph plugin | ~11 days | The runner-up. Third-party code on an engine I re-sync wholesale, an unconfirmed save path, and a third graph language |
+| One SUDS Pro script per chapter | ~6 days | Can't run things side by side or hold world state |
+| My own graph editor | 25+ days | Studios that do this have tools teams |
+| StateTree with a story schema | ~12.5 days | Picked |
+
+StateTree had the second-highest estimate, and it met every requirement. Tasks in one state run together, so a gate and a sound loop share a beat. ExitState runs on every task that entered, which makes undoable effects nearly free. The closest prior art I found is Naughty Dog's state scripts, from Jason Gregory's GDC 2009 talk "State-Based Scripting in Uncharted 2: Among Thieves". Their states, tracks and signals map almost one to one onto StateTree's states, tasks and events.
+
+A spike came first, with Flow Graph as the fallback if any of four switch conditions failed. Three of them are automation tests on the real director, and they pass. A gate ends its beat and the loop beside it, a fact write wakes a sleeping tree, and an effect survives a sustained re-entry. The fourth, a 14-beat chapter that reads well in the stock editor, is mine to judge.
+
+## A schema of its own
+
+A StateTree schema decides which nodes and context a tree allows. `UStoryTreeSchema` derives from the component's schema, so story trees keep Delay and the other common nodes. Story nodes derive from the plain `FStateTreeTaskBase` and `FStateTreeConditionBase`, and every engine schema allows only the common bases plus its own nodes, so story nodes appear in story trees and nowhere else. Epic's AI schema adds its nodes the same way.
+
+```cpp title="StoryTreeSchema.cpp" {5,11-12}
+UStoryTreeSchema::UStoryTreeSchema()
+{
+	// Story trees spend nearly all their time waiting on a gate, so they always sleep when nothing in them ticks,
+	// whatever StateTree.Component.DefaultScheduledTickAllowed says.
+	ScheduledTickPolicy = EStateTreeComponentSchemaScheduledTickPolicy::Allowed;
+}
+
+bool UStoryTreeSchema::IsStructAllowed(const UScriptStruct* InScriptStruct) const
+{
+	return Super::IsStructAllowed(InScriptStruct)
+		|| InScriptStruct->IsChildOf(FStoryTaskBase::StaticStruct())
+		|| InScriptStruct->IsChildOf(FStoryConditionBase::StaticStruct());
+}
+```
+
+Blueprint nodes can't be fenced in like this, because the component schema allows every Blueprint node class, so story nodes are C++. In the node picker, they get a Story category of their own.
+
+<Figure
+  src="projects/modular-story/node-picker.png"
+  alt="The StateTree node picker open on a story tree, with a Story category beside the stock categories."
+  width={980}
+  height={468}
+  caption="The node picker in a story tree, with the Story category beside the stock ones."
+/>
+
+The director is an actor with a `UStoryTreeComponent`, whose `GetSchema` returns the story schema. That override filters the director's tree picker to story trees, and `HasValidStateTreeReference` refuses any other tree at run time. It starts a chapter through `StartLogic`, the path that installs the hook which wakes a sleeping tree.
+
+The first test run passed 5 of 12. The other 7 failed with "Malformed task, missing instance value." The StateTree compiler refuses a node without instance data, and my Beat task and the tests' probe had none, so the story's node bases now give every child an empty instance struct, as UAF's condition base does.
+
+## A beat is a state
+
+A beat is a state with a Beat task on it. The Beat task's tag, such as `Beat.Vault.FindKey`, is a fact it sets to 1 when the flow moves on, and the beat's enter condition, `Beat.Vault.FindKey == 0`, keeps it out once it's past. Each beat holds at least one gate, a task that's considered for completion, so the beat ends when its gate passes. Loops and effects beside it aren't considered, so they stop with the beat. In the editor, the Beat section tops each beat's details.
+
+<Annotated
+  src="projects/modular-story/editor-overview.png"
+  alt="The stock StateTree editor with the gym's test chapter open. The tree view lists the beats in order. The details panel shows the Knock beat, with the Beat section on top, its skip condition, its Beat task and its Look gate."
+  width={1627}
+  height={753}
+  points={[
+    { x: 7.9, y: 11.4, label: "The chapter's beats, in the order they run" },
+    { x: 68.4, y: 10.5, label: "The Beat section, above the stock State category" },
+    { x: 96.7, y: 17.5, label: "When it ends picks Next beat or Finish chapter" },
+    { x: 78.9, y: 61.2, label: "The skip condition the editor writes" },
+    { x: 81.0, y: 76.5, label: "The Beat task, which sets its fact as the beat ends" },
+    { x: 81.6, y: 88.4, label: "The gate, the only task considered for completion" },
+  ]}
+  caption="The gym's test chapter in the stock StateTree editor, with the Knock beat selected."
+/>
+
+Writing the skip condition by hand on 60 beats is how progression bugs get in, so the editor writes it. ModularStoryEditor registers an editor schema for the story schema, and the editor calls its `PreValidate` whenever it validates a tree, which is on every edit and every compile. It keeps each beat's skip condition last, joined with And at the top level, so a past beat never enters. It runs before the engine fixes up state links, so a link to a renamed beat follows the new name. And it names each beat after its tag, so `Beat.Vault.FindKey` becomes Find Key, unless someone typed a name by hand.
+
+<Loop
+  src="projects/modular-story/beat-tag-sync-zoom.mp4"
+  poster="projects/modular-story/beat-tag-sync-zoom.jpg"
+  width={1628}
+  height={762}
+  label="StateTree editor"
+  caption="Clearing the Beat Tag renames the state Beat and drops its skip condition, and the links to it follow the new name. Picking the tag again brings it all back."
+/>
+
+The When it ends row and the Beat Tag picker follow Epic's Avalanche transition editor.
+
+The stock compiler accepts two mistakes that wreck a story. A state with no considered task gets a completion bit that nothing sets, so it never ends. A beat that ends with no transition on it or above it sends the tree back to the root, which selects again before ExitState runs. The Beat task hasn't written its fact yet, so the same beat starts over, forever. The editor schema's `HandlePostInternalCompile` fails the compile for both, and for two beats that share a tag, with the error on the beat.
+
+<Figure
+  src="projects/modular-story/compile-error.png"
+  alt="StateTree Compiler Results listing an error on a beat that has no gate."
+  width={908}
+  height={544}
+  caption="A beat without a gate fails the compile."
+/>
+
+## Gates sleep
+
+Stock StateTree tasks tick by default, and a story tree spends nearly all its time waiting. My gates follow one rule from Naughty Dog's waits. Test the condition the moment the gate starts, then listen. A gate that's already met passes at once, so an event that fired before anyone listened can't strand the player.
+
+```cpp title="StoryTasks.cpp" {4-7,16}
+EStateTreeRunStatus FStoryTask_WaitForFact::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	UStoryWorldSubsystem& StorySubsystem = Context.GetExternalData(StoryHandle);
+	if (UE::ModularStory::CompareFact(StorySubsystem.GetFact(Fact), Compare, Value))
+	{
+		return EStateTreeRunStatus::Succeeded;
+	}
+
+	// The weak context finishes the task from outside the tree's update, and that wakes a sleeping tree.
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	InstanceData.FactChangedHandle = StorySubsystem.OnFactChanged.AddLambda(
+		[WeakContext = Context.MakeWeakExecutionContext(), GateFact = Fact, GateCompare = Compare, GateValue = Value](const FGameplayTag ChangedFact, const float NewValue)
+		{
+			if (ChangedFact == GateFact && UE::ModularStory::CompareFact(NewValue, GateCompare, GateValue))
+			{
+				WeakContext.FinishTask(EStateTreeFinishTaskType::Succeeded);
+			}
+		});
+
+	return EStateTreeRunStatus::Running;
+}
+```
+
+The gate binds the facts subsystem's native delegate. When the fact passes, the gate finishes itself through the weak execution context, and `FinishTask` schedules the tree's next tick, which wakes it for the transition. Fact writes never pass through StateTree's event queue, which holds 64 events, so a burst of them can't overflow it. Watch the tick lane in the timeline below.
+
+<Figure
+  src="projects/modular-story/gates-sleep-timeline.png"
+  alt="Timeline of four beats. The StateTree component tick lane is asleep through each beat and shows a short orange spike as the chapter starts and each time the player passes a gate. A separate lane shows the Look gate's 10 Hz timer during one beat, and a fact lane shows each beat's fact written as it ends."
+  width={1920}
+  height={900}
+  caption="A chapter over time. The component's tick stays off while a gate waits, and each pass wakes it for the transition."
+/>
+
+A Story Handle component names its actor with a gameplay tag such as `Vault.Door`, the way a targetname does in Hammer, and keeps its states (Held, Occupied, Open, Locked, Lit and Hidden). Walk, Grab, Release and Wait For State test a state as they start, then listen to the handle subsystem, and a gate whose handle hasn't streamed in yet waits for it to register.
+
+Look is the exception, since nothing fires an event when someone looks at something. It samples the gaze ten times a second on a world timer, so the tree stays asleep, and passes once the player has looked at the actor for its hold time, 2 seconds by default, like Hammer's `trigger_look`. Looking away starts the hold over, and by default the actor has to be in line of sight. The gaze comes from my XRViewpoint plugin, which uses the eyes when the headset tracks them and the head when it doesn't. Its debug view boxes whatever gameplay asks it about and the props nearby, green for anything the player is looking at.
+
+<Loop
+  src="projects/modular-story/look-gate-debug.mp4"
+  poster="projects/modular-story/look-gate-debug.jpg"
+  width={1920}
+  height={1080}
+  label="Play In Editor"
+  caption="xr.Gaze.Debug 2 during the Knock beat. The bar fills while the readout's Looking at line lists the lever door, and a glance at the unlocked door empties it. Two unbroken seconds pass the gate into Through. I drew the panel and chip from this run's log."
+/>
+
+Any gate can also send an Outcome Event, so two gates in one state, each with a transition on its event, branch on whichever passes first.
+
+## Effects hold while their state is active
+
+An effect applies in EnterState and undoes itself in ExitState. Set Fact and Set State have a Persist box that skips the undo. A Set State that turns a door's Locked state off with Persist leaves the door unlocked after its state ends. A Set State that lights a lamp without Persist turns it off again when its state exits. The two lines under the state bars show the difference.
+
+<Figure
+  src="projects/modular-story/effect-lifetime.png"
+  alt="Two step lines under two state bars. The door's Locked state goes off when Open Door starts and stays off. The lamp's Lit state comes on when Look Inside starts and goes off when it exits, and a child state returning to Look Inside leaves the lamp on."
+  width={1920}
+  height={860}
+  caption="A persistent write outlives its state. A scoped one ends with it, and a child returning to its parent touches neither."
+/>
+
+Two engine behaviours needed handling. When a child state goes back to its parent, StateTree exits and re-enters the parent's tasks with the change type Sustained, which would flicker the lamp. Effects and the Beat task turn off `bShouldStateChangeOnReselect`, so StateTree skips them on a sustained change. And a stop can skip ExitState when the tree's context can't be set up, so each effect records its undo in the story subsystem, and `StopChapter` undoes whatever is left, newest first.
+
+## A load is a restart
+
+StateTree can start at a state by tag, but it only searches the root asset, and the stock component never passes one. So a load runs the chapter from the top and lets every finished beat skip itself. The facts live in `UStoryWorldSubsystem` as a flat map from gameplay tag to float, where a flag is 1 and a fact never written reads 0. A save only has to copy the map, and a load runs three steps in a fixed order.
+
+<Flow
+  steps={[
+    { title: "StopChapter", body: "The tree stops, and the scoped effects undo themselves" },
+    { title: "RestoreFacts", body: "The save's facts replace the table, and OnFactsRestored fires" },
+    { title: "StartChapter", body: "The root selects from the top and falls through to the first beat that isn't past" },
+  ]}
+  caption="The load order."
+/>
+
+The stop goes first, because its undos write facts and would overwrite the save. `RestoreFacts` doesn't fire `OnFactChanged`, since no gate is listening while the tree is stopped. The Beat task makes the fall-through work. It writes its fact in ExitState and skips the write when the tree is stopping.
+
+```cpp title="StoryTasks.cpp" {7-10,12}
+void FStoryTask_Beat::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	UStoryWorldSubsystem& StorySubsystem = Context.GetExternalData(StoryHandle);
+	StorySubsystem.BeatEnded(Beat);
+
+	// A stop is a load or the game ending, not the flow moving on, so the beat replays from its start next time.
+	if (Transition.CurrentRunStatus == EStateTreeRunStatus::Stopped)
+	{
+		return;
+	}
+
+	StorySubsystem.SetFact(Beat, 1.0f);
+}
+```
+
+StateCompleted can't do this job, because an event transition skips it, and branching on a gate's Outcome Event is an event transition. Quitting mid-beat replays that beat from its start, which I accept, since I only plan checkpoints at beat boundaries. After a restore, the root tries each beat in order.
+
+<Figure
+  src="projects/modular-story/load-fall-through.png"
+  alt="Restored facts on the left, with the first two beats set to 1. On the right the chapter's root tries its beats in order. Find Key and Open Door fail their skip conditions and are skipped, and Look Inside enters."
+  width={1920}
+  height={740}
+  caption="The past beats fail their skip conditions, and the first beat that isn't past enters."
+/>
+
+Facts are global, so this works inside linked templates too.
+
+<Callout title="One NaN would have looped forever" tone="warn">
+
+ModularStorySUDS mirrors each fact as a SUDS Pro global, so a dialogue script reads `{global.Story.Vault.TookKey}` and writes it with `[set global.Story.Vault.TookKey 1]`, and the bridge copies changes both ways. A review before the build caught the trap. NaN never equals itself, so every write of a NaN fact would count as a change, and the bridge would bounce it between the two forever. `SetFact` now refuses anything that isn't a finite number, and so does the bridge.
+
+</Callout>
+
+## Driving a run from the console
+
+Four console commands cover most of my testing, and none of them exist in Shipping builds. `Story.Fact Vault.TookKey` sets a fact to 1, or to a value after the tag, which passes a fact gate by hand. `Story.State Vault.Door Open` reports a state on a handle as if its actor had, so I can pass a handle gate without a headset. `Story.Pass` marks the innermost running beat past and restarts the chapter, so the next beat begins.
+
+`Story.Jump <beat>` is a load with made-up facts. It reads the chapter the way it runs, into subtrees and linked templates, and finds the first beat with that tag or one under it. Then it stops the chapter, rewrites the beat facts around it and starts the chapter again.
+
+<Figure
+  src="projects/modular-story/story-jump.png"
+  alt="Four beats in the order they run, with Look Inside as the jump's target. The facts for Find Key and Open Door go from 0 to 1, the target and the beat after it are cleared, and the player goes to the mark of Open Door's Place Player."
+  width={1920}
+  height={880}
+  caption="What Story.Jump Vault.LookInside does before the chapter starts again."
+/>
+
+The player lands on the mark of the last Place Player before the beat, the task that puts the player's head over a mark. Marks often live in sets that are still streaming in, so the jump checks every 0.1 s, gives up with a warning after 10 s, and gives way if the beat's own Place Player moves the player first. An unknown beat gets a list of the chapter's beats instead.
+
+To watch the beats change, I type `log LogStateTree Log` before pressing Play, and LogStateTree logs every enter and exit. Here's `Story.Jump GymNight.Choose` from the clip at the top, cut to the Enter and Exit lines and the command's own, with the tree's asset path taken out of each Enter line.
+
+```log title="Output Log" {4}
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Wake Up(1)' (1)
+LogStateTree: StoryDirector_1: Exit state 'Root.Wake Up' (1)
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Choose(4); Pick(5)' (1)
+Story.Jump started ST_GymNight again at Beat.GymNight.Choose.
+```
+
+The restarted root skips Wake Up, Knock and Through, whose facts the jump set, and enters Pick inside Choose.
+
+## Tests on the real director
+
+ModularStoryTests builds story trees in code with StateTree's own compiler, as Epic's `StateTreeTestSuite` does, and runs them on a real `AStoryDirector` in a game world. A probe task logs each enter and exit and marks the sustained ones.
+
+<Stats items={[
+  { value: "62", label: "ModularStory tests" },
+  { value: "7", label: "SUDS bridge tests" },
+  { value: "0", label: "failures in the last headless run" },
+]} />
+
+| Test | What it proves |
+|---|---|
+| `ModularStory.Tree.FactWriteWakesSleepingTree` | A tree waiting on a gate turns its tick off, and a fact write wakes it |
+| `ModularStory.Tree.LinkedTemplateSkipsPastBeats` | After a save, stop, restore and start, beats inside a linked template skip themselves |
+| `ModularStory.Tree.EffectSurvivesSustainedReentry` | A child going back to its parent neither undoes nor re-applies the parent's effect |
+| `ModularStory.Editor.CompileChecksBeats` | All three beat mistakes fail the compile, each with its own error |
+| `ModularStory.Jump.GivesWayToTheBeatsOwnPlacePlayer` | When the beat's own Place Player moves the player first, the jump doesn't move them back |
+
+<Callout title="The second run failed in my test world" tone="note">
+
+The spike's second run passed 11 of 12. A test runs inside one engine frame, and the tick manager runs a tick function at most once per frame counter, so a tree that had ticked once never ticked again. The test world now advances `GFrameCounter` after each world tick, as Epic's `FTestWorldWrapper` does, and the third run passed all 12.
+
+</Callout>
+
+## What's still open
+
+Checkpoints and the save itself are still to come. The load order runs in tests on the real director, but no checkpoint calls it yet, and the save doesn't keep persistent state writes. Answer, the gate that takes a nod or a shake, polls ten times a second, because XRViewpoint's gesture event is a dynamic delegate and a task is a struct that can't bind one. Look Away, Wait For Event and Timed gates come next. A card-view Beat Sheet tab waits until the stock editor proves slow, since a review called it over-built for one person and about 60 beats.
+
+The next test I want walks every chapter end to end with `Story.Pass`, so a progression stopper fails a test run before it strands a player. By hand, in the gym chapter, the walk looks like this, trimmed the same way.
+
+```log title="Output Log" {4,7,10,13}
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Wake Up(1)' (1)
+LogStateTree: StoryDirector_1: Exit state 'Root.Wake Up' (1)
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Knock(2)' (1)
+Story.Pass passed Beat.GymNight.WakeUp and started ST_GymNight again.
+LogStateTree: StoryDirector_1: Exit state 'Root.Knock' (1)
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Through(3)' (1)
+Story.Pass passed Beat.GymNight.Knock and started ST_GymNight again.
+LogStateTree: StoryDirector_1: Exit state 'Root.Through' (1)
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Choose(4); Pick(5)' (1)
+Story.Pass passed Beat.GymNight.Through and started ST_GymNight again.
+LogStateTree: StoryDirector_1: Exit state 'Root.Choose.Pick' (1)
+LogStateTree: StoryDirector_1: Enter state 'Root(0); Lights Out(8)' (1)
+Story.Pass passed Beat.GymNight.Choose and started ST_GymNight again.
+LogStateTree: StoryDirector_1: Exit state 'Root.Lights Out' (1)
+Warning: Story.Pass couldn't start ST_GymNight again.
+```
+
+Passing the last beat leaves the root nothing to enter, so for now the walk ends on a warning instead of a finished chapter.
