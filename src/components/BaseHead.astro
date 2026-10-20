@@ -1,5 +1,6 @@
 ---
 // Global <head>. Imported on every page via the layouts.
+import '@fontsource/archivo-black';
 import '../styles/global.css';
 import { SITE_TITLE, AUTHOR, DEFAULT_OG_IMAGE } from '../consts';
 import { originalUrl } from '../lib/images';
@@ -23,11 +24,7 @@ const ogImage = ogOverride
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<script is:inline>
-	document.documentElement.classList.add('js');
-</script>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 <link
 	rel="alternate"
@@ -35,7 +32,6 @@ const ogImage = ogOverride
 	title={SITE_TITLE}
 	href={new URL('rss.xml', Astro.site)}
 />
-<meta name="generator" content={Astro.generator} />
 
 <Font cssVariable="--font-atkinson" preload />
 <ClientRouter />
@@ -46,7 +42,7 @@ const ogImage = ogOverride
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 <meta name="author" content={AUTHOR} />
-<meta name="theme-color" content="#09090b" />
+<meta name="theme-color" content="#141311" />
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
