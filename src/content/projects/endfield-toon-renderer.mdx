@@ -161,7 +161,7 @@ The step is a fraction of the view's height, and with edge antialiasing on it sa
 
 This is the part of the style everyone recognizes and the stock depth test can't do. The bangs are in front of the eyes, and the eyes and brows have to show anyway.
 
-<Compare before="projects/endfield-toon-renderer/eyes-stock.jpg" after="projects/endfield-toon-renderer/eyes-mine.jpg" beforeLabel="Depth test" afterLabel="Stencil test" alt="Close-up of the pink-haired character's face. On the stock side, her bangs cover her eyes completely. On my side, her eyes and brows draw over the bangs while the hair still frames her face." width={960} height={720} caption="Same frame as the first comparison, cropped to her face." />
+<Compare before="projects/endfield-toon-renderer/eyes-depth-v2.jpg" after="projects/endfield-toon-renderer/eyes-stencil-v2.jpg" beforeLabel="Depth test" afterLabel="Stencil test" alt="Close-up of the pink-haired character's face from slightly above. With the depth test, strands of her bangs cut across both eyes and hide her brows. With the stencil test, her brows, lashes and eyes draw over the bangs." width={1472} height={1104} caption="One 4K frame on my character path, rendered with the hair's stencil test off and on, cropped at full resolution." />
 
 Unreal's stencil tools for this are per primitive, through custom depth, and an eye is only a material slot on the head mesh. So I made stencil a material property. A material can write a Scene Stencil Value from 0 to 3 into stencil bits 5 and 6, and another material can test against it with a compare function and a reference value. On PC those bits alias the lighting channel bits, whose only readers are deferred, so forward shading gets them for free.
 
