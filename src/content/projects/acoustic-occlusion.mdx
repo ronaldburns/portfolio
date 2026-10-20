@@ -22,11 +22,11 @@ Stock Unreal Engine 6 muffles a sound when one line trace hits anything, so a ch
 </Lede>
 
 <Player
-  src="projects/acoustic-occlusion/ab-stock-vs-plugin.mp4"
-  poster="projects/acoustic-occlusion/ab-stock-vs-plugin-poster.jpg"
+  src="projects/acoustic-occlusion/ab-stock-vs-plugin-v2.mp4"
+  poster="projects/acoustic-occlusion/ab-stock-vs-plugin-v2-poster.jpg"
   width={1920}
   height={1080}
-  caption="Stock occlusion, then the plugin, on the same walk round a test booth: curtain, open face, concrete, stud wall. Room reverb is off in both. Wear headphones."
+  caption="Stock occlusion for the first eleven seconds, then the plugin, on the same walk round a test booth: curtain, open face, concrete, stud wall. Room reverb is off in both. Wear headphones."
 />
 
 <Facts items={[
@@ -91,8 +91,8 @@ Out[Sample] = bCrossfadeFromDry ? FMath::Lerp(In[Sample], Wet, Ramp) : Wet;
 My test map's audio lab has a twelve-sided booth with a speaker in the middle, one face open and the others each a different construction, from a curtain to 15 cm of concrete. Walk the ring and listen to the mid band climb.
 
 <Player
-  src="projects/acoustic-occlusion/materials-booth-ring.mp4"
-  poster="projects/acoustic-occlusion/materials-booth-ring-poster.jpg"
+  src="projects/acoustic-occlusion/materials-booth-ring-v2.mp4"
+  poster="projects/acoustic-occlusion/materials-booth-ring-v2-poster.jpg"
   width={1920}
   height={1080}
   caption="The ring from the open face the long way round to concrete. Each placard gives its face's loss, and the rays redden as it climbs. Debug lines are drawn thicker for this page."
@@ -203,11 +203,11 @@ The render thread's first buffer can't wait a frame, or a sound that starts behi
 Transmission alone gets direction wrong. If a wall blocks the straight line and an open door stands three metres to the left, you should hear the sound from the door, because sound bends round its edges. Each room is an `AAcousticRoom` actor, and each doorway or window gets a `UAcousticPortalComponent`, a box fitted to the opening. For a sound in another room, the subsystem lists every path through up to three doorways, pulls the four shortest tight round each rim at the Keller apex (the edge point that makes the path shortest), and sums the two that carry the most sound. Each leg is cast as a ray too, so a sofa in the way still counts.
 
 <Player
-  src="projects/acoustic-occlusion/doorway-walk.mp4"
-  poster="projects/acoustic-occlusion/doorway-walk-poster.jpg"
+  src="projects/acoustic-occlusion/doorway-walk-v2.mp4"
+  poster="projects/acoustic-occlusion/doorway-walk-v2-poster.jpg"
   width={1920}
   height={1080}
-  caption="The same walk past the lab doorway with portals off, then on. With portals on, a magenta path runs from the listener through the doorway to the speaker, beside the red rays through the wall. The small red marks are the wall pieces described under Rooms."
+  caption="The same walk past the lab doorway with portals off for the first ten seconds, then on. In the second half a magenta path runs from the listener through the doorway to the speaker, beside the red rays through the wall. The small red marks are the wall pieces described under Rooms."
 />
 
 Each doorway is priced with Kurze-Anderson, an empirical fit to Maekawa's barrier curve, summed over the opening's edges and capped at 25 dB. It gives 5 dB at grazing and nothing once an edge clears the line by about a tenth of a wavelength, 18 cm in the low band and 1.2 cm in the high.
