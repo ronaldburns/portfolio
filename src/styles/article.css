@@ -113,6 +113,35 @@ article .content :is(th, td):first-child {
 article .content :is(th, td):last-child {
 	padding-right: 0;
 }
+/* A console variable reads as one command, so on a wide screen a code chip alone in the first column stays on one line. */
+@media (min-width: 40rem) {
+	article .content td:first-child > code:only-child {
+		white-space: nowrap;
+	}
+}
+/* On a phone those chips leave the other column a sliver, so each row stacks, chip above its description. */
+@media (width < 40rem) {
+	article .content table:has(td:first-child > code:only-child) :is(thead, tbody, tr, td) {
+		display: block;
+	}
+	article .content table:has(td:first-child > code:only-child) thead {
+		display: none;
+	}
+	article .content table:has(td:first-child > code:only-child) tr {
+		padding-block: 0.6rem;
+		border-bottom: 1px solid var(--ar-rule);
+	}
+	article .content table:has(td:first-child > code:only-child) td {
+		padding: 0;
+		border: 0;
+	}
+	article .content table:has(td:first-child > code:only-child) td + td {
+		margin-top: 0.3rem;
+	}
+	article .content td:first-child > code:only-child {
+		overflow-wrap: anywhere;
+	}
+}
 
 /* --- Blocks and figures --------------------------------------------------- */
 

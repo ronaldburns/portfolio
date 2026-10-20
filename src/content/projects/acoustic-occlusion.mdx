@@ -1,0 +1,314 @@
+---
+title: "Making walls sound like walls"
+description: "An Unreal Engine 6 audio plugin that casts 13 rays per sound, measures the material and thickness of every wall they cross, plays the loss as a three-band EQ, and bends sound through open doorways."
+date: "Oct 20, 2026"
+image: projects/acoustic-occlusion/hero.jpg
+tags: "Unreal Engine, C++, Audio, DSP, VR"
+featured: true
+published: true
+---
+
+import Figure from '../../components/article/Figure.astro';
+import Loop from '../../components/article/Loop.astro';
+import Player from '../../components/article/Player.astro';
+import Annotated from '../../components/article/Annotated.astro';
+import Gallery from '../../components/article/Gallery.astro';
+import Stats from '../../components/article/Stats.astro';
+import Flow from '../../components/article/Flow.astro';
+import Lede from '../../components/article/Lede.astro';
+import Facts from '../../components/article/Facts.astro';
+
+<Lede>
+Stock Unreal Engine 6 muffles a sound when one line trace hits anything, so a chair leg can smother a radio. My Acoustic Occlusion plugin casts 13 rays per sound, prices every wall they cross by its material and thickness in three frequency bands, and bends sound through open doorways.
+</Lede>
+
+<Player
+  src="projects/acoustic-occlusion/ab-stock-vs-plugin.mp4"
+  poster="projects/acoustic-occlusion/ab-stock-vs-plugin-poster.jpg"
+  width={1920}
+  height={1080}
+  caption="Stock occlusion, then the plugin, on the same walk round a test booth: curtain, open face, concrete, stud wall. Room reverb is off in both. Wear headphones."
+/>
+
+<Facts items={[
+  { label: "Engine", value: "Unreal Engine 6, C++" },
+  { label: "Platforms", value: "PC VR and standalone Quest 3" },
+  { label: "Tests", value: "61 automation tests, all passing" },
+]} />
+
+## Stock occlusion
+
+`FActiveSound::CheckOcclusion` runs one test trace from the sound to the listener on the attenuation's occlusion channel, ignores the sound's owner, and gets back a bool. If anything blocks the line, the sound glides to a low-pass cutoff and a volume scale set on the attenuation. Out of the box those are 20 kHz and 1.0, so nothing happens until you tune them. I had mine at 1 kHz and 0.2x volume.
+
+That's binary, so a broom handle counts as much as a concrete wall, and it never learns what it hit or how thick it was. The filter is a single pole, 6 dB per octave, so every wall gets the same curve.
+
+I measured both halves of the clip above against the dry loop, in one octave round each band's centre (177 Hz, 705 Hz and 2.8 kHz).
+
+| Loss in the clip, low / mid / high | Stock | Acoustic Occlusion |
+|---|---|---|
+| Curtain | 14.1 / 15.7 / 23.6 dB | 0.6 / 1.4 / 2.9 dB |
+| Concrete | 13.9 / 15.6 / 23.6 dB | 18.6 / 22.7 / 26.8 dB |
+| Stud wall | 14.0 / 15.7 / 23.6 dB | 8.3 / 20.1 / 22.7 dB |
+
+Stock takes as much off a curtain as off 15 cm of concrete. The plugin lands within half a decibel of each face's placard, apart from the stud wall's mid band. Across that octave the band filters still overlap a little, so some of the low band's much smaller loss leaks in and costs about 3 dB.
+
+I replaced that check through two plugin slots the engine already has. The occlusion slot (`IAudioOcclusion`) gets each voice's buffer on the audio render thread, after distance attenuation and before the spatializer, and runs my EQ. The source data override slot (`IAudioSourceDataOverride`) runs on the audio thread and can move where the spatializer hears a sound from, which is how doorways work. With my settings on an attenuation, the engine skips its own trace. The VR game I'm building also runs on standalone Quest 3, so nothing may block the audio render thread.
+
+## Why a wall sounds like a wall
+
+Sound gets through a wall by shaking it. A heavy wall barely moves, and any wall moves less at high frequencies. That's the mass law: for a single solid panel, transmission loss climbs about 6 dB per doubling of mass or frequency. It has the shape of a first-order low-pass, so for one thin panel a gain plus the engine's one-pole filter is the right model.
+
+A stud wall is two sheets with air between them. The air acts as a spring, the sheets resonate together around 100 to 125 Hz, and above that the loss climbs about 18 dB per octave. The stud wall the National Research Council of Canada measured loses 16 dB in the low band and 46 in the mid, so the thump passes and the voice doesn't. Glass goes the other way. Above about 2.1 kHz the bending waves in a 6 mm pane line up with the sound in the air and the loss stops climbing, so its high band (29 dB) sits under its mid band (32 dB). And gaps win. A 30 dB door with a 13 mm undercut comes out at 21.4 dB, because more sound goes under the door than through it.
+
+Compare the shape of each orange line with the grey one, which is stock occlusion at my old settings.
+
+<Figure
+  src="projects/acoustic-occlusion/chart-band-loss-by-material.png"
+  alt="Four small charts of heard loss against frequency. The stud wall rises from 8 dB in the bass to 23 dB in the mids, glass peaks at 16 dB in the mids and dips to 14.5 dB above, concrete climbs from 18.5 to 27 dB, and the hollow door climbs gently from about 7 to 10 dB. Stock occlusion is the same grey curve in every panel. It starts at 14 dB and rises."
+  width={1800}
+  height={1368}
+  caption="Heard loss through one layer of four materials, from the plugin's own math, against stock occlusion."
+/>
+
+One curve can't draw a shelf, a dip and a slope, so the plugin has three bands.
+
+## Three bands
+
+Lab transmission data comes in octave bands, so I split where the data splits: 125 and 250 Hz are the low band, 500 Hz and 1 kHz the mid, 2 and 4 kHz the high, with crossovers at 355 Hz and 1.4 kHz. I settled the count by fitting one gain plus a low-pass to the same data. The hollow door fits, concrete is 3.5 dB off, glass comes out 15 dB too dark in the high band, and the stud wall doesn't fit at all. Steam Audio splits at 800 Hz and 8 kHz, which puts almost all the difference between building materials into one band.
+
+Per voice, the engine's Linkwitz-Riley band splitter (4-pole, phase compensated) splits the buffer, each band gets its own gain ramped across it, and the bands sum back together. A voice that has never been occluded skips the filters and passes through bit-exact. The first time it's occluded mid-sound, it crossfades from dry over one buffer and stays engaged until it ends. Gains move in dB, faster when a sound gets louder (60 ms) than quieter (150 ms), so an opening door opens the sound almost at once.
+
+```cpp title="AcousticOcclusionPlugins.cpp"
+const float TimeConstant = TargetLossDb < StartLossDb[Band]
+	? Voice.AttackSeconds : Voice.ReleaseSeconds;
+const float Alpha = TimeConstant > 0.0f
+	? 1.0f - FMath::Exp(-BufferSeconds / TimeConstant) : 1.0f;
+EndLossDb[Band] = StartLossDb[Band] + (TargetLossDb - StartLossDb[Band]) * Alpha;
+...
+const float Wet = Low[Sample] * GainLow + Mid[Sample] * GainMid
+	+ High[Sample] * GainHigh;
+Out[Sample] = bCrossfadeFromDry ? FMath::Lerp(In[Sample], Wet, Ramp) : Wet;
+```
+
+My test map's audio lab has a twelve-sided booth with a speaker in the middle, one face open and the others each a different construction, from a curtain to 15 cm of concrete. Walk the ring and listen to the mid band climb.
+
+<Player
+  src="projects/acoustic-occlusion/materials-booth-ring.mp4"
+  poster="projects/acoustic-occlusion/materials-booth-ring-poster.jpg"
+  width={1920}
+  height={1080}
+  caption="The ring from the open face the long way round to concrete. Each placard gives its face's loss, and the rays redden as it climbs. Debug lines are drawn thicker for this page."
+/>
+
+## Thirteen rays
+
+A single trace turns every edge into a cliff: step past a doorframe and the sound snaps from open to muffled. I borrowed Steam Audio's volumetric occlusion. Each sound gets 12 points from a Halton sequence inside a 30 cm sphere around it, plus the source itself, and the plugin casts a ray from your head to each. Points the source can't see, like ones buried in a wall, are dropped.
+
+Say one ray of 13 slips through a gap and the other 12 cross a stud wall at 46 dB. How much does the wall take off? Guess before you look.
+
+<Figure
+  src="projects/acoustic-occlusion/chart-energy-vs-db-mean.png"
+  alt="Line chart of combined loss against the number of clear rays out of 13. Averaging as energy drops from 46 dB to 11.1 dB with one clear ray. Averaging in dB falls in a straight line and is still 42.5 dB with one clear ray. Taking the loudest ray drops straight to 0 dB."
+  width={1800}
+  height={1044}
+  caption="Combined loss as clear rays replace blocked ones. Only the energy mean lets a gap dominate."
+/>
+
+Averaged as energy, which is how incoherent paths add, the answer is 11.1 dB, and the gap wins the way gaps do. Averaged in dB it's 42.5 dB and the gap vanishes. The loudest ray says 0 dB and turns every crack into an open window. Along one ray, walls multiply, and each ray's loss is capped at 60 dB to stand in for flanking, the sound that leaks round a wall through the structure.
+
+Each update casts four of the 13 rays, 15 times a second: the source's own ray every time, the other points in turn. Every point keeps its last result, the way CryEngine amortizes its rays, so the average always covers all 13 and smooths itself. A full refresh takes about 0.27 s, too slow for a slammed door, so when the source's own ray changes by more than 3 dB, or the source or listener jumps more than 50 cm, the voice recasts everything at once.
+
+<Loop
+  src="projects/acoustic-occlusion/corner-post-rays.mp4"
+  poster="projects/acoustic-occlusion/corner-post-rays-poster.jpg"
+  width={1920}
+  height={1080}
+  caption="A sidestep past a corner post, from the open face to concrete and back. The rays turn red a few at a time."
+/>
+
+## Entry, exit, thickness
+
+An object-type multi-trace returns every shape on the ray, where a channel trace stops at the first block. The plugin keeps each hit that blocks the attenuation's occlusion channel, the engine trace's own rule, so no level needed re-authoring.
+
+Chaos only reports where a ray enters a shape. Its box and convex raycasts compute the exit and throw it away. So for each entry hit the plugin casts backwards from the far end of the ray against just that hit's shape, with no broadphase. Exit minus entry is measured along the surface normal, because lab ratings already average over angles of incidence and a grazing ray mustn't count the wall as thicker.
+
+```cpp title="AcousticOcclusionTrace.cpp"
+const double ThicknessCm = Layer.bMeasured
+	? (Layer.ExitCm - Layer.EntryCm) * Layer.CosIncidence
+	: static_cast<double>(Material.ReferenceThicknessCm);
+...
+Out.Energy = LayerTransmission(Material, Out.ThicknessCm);
+Energy = CombineInSeries(Energy, Out.Energy);
+```
+
+If the backward cast finds nothing, as with a single plane or an open mesh, the layer falls back to the material's reference thickness. A sound inside a shape, like a radio in a closed drawer, keeps that shape as a layer.
+
+<Annotated
+  src="projects/acoustic-occlusion/layers-annotated.jpg"
+  alt="The booth's concrete face cut away in the debug view. Red rays come in from the right edge and end at points round a glowing speaker, with short yellow segments where they cross the hidden face. The placard above it reads CONCRETE 15 cm, loss 37 / 46 / 54 dB, heard 18.5 / 23 / 27 dB, and the voice's line in the corner reads L 18.5 / M 23.0 / H 27.0 dB."
+  width={1920}
+  height={1080}
+  points={[
+    { x: 80, y: 68, label: "Ray colour is its mid-band loss, green when clear and red at 40 dB" },
+    { x: 68, y: 50, label: "Yellow runs from the entry hit to the exit found by the backward cast" },
+    { x: 55, y: 42, label: "Each ray ends at one of the 13 points round the speaker" },
+    { x: 87, y: 36, label: "The face's placard, heard 18.5 / 23 / 27 dB" },
+    { x: 21, y: 4, label: "The voice prints the same three losses on screen" },
+  ]}
+  caption="The concrete face and one corner post are hidden from the camera but keep their collision, so you can see the layer inside the wall."
+/>
+
+The numbers live on the physical material, in a `UAcousticMaterial` asset user data entry: lab loss per band at a reference thickness, a slope per doubling of thickness, and a leak fraction for gaps no ray will find, like a door undercut. I took defaults for 14 house materials from published lab measurements where they exist. Concrete gains 4 dB per doubling in the mid band and plywood 2. Hollow assemblies (stud walls, doors, furniture, appliances) get zero, because their collision box is solid and the wall isn't. Summing a stud wall's two sheets as separate panels would over-predict its bass loss by about 15 dB.
+
+<Figure
+  src="projects/acoustic-occlusion/chart-thickness-scaling.png"
+  alt="Line chart of mid-band loss against thickness on a doubling scale. Concrete rises from 42 to 54 dB between 7.5 and 60 cm, plywood from 18.5 to 24.5 dB between 1.27 and 10.16 cm, and the stud wall stays at 46 dB from 5.75 to 46 cm."
+  width={1800}
+  height={1044}
+  caption="Mid-band loss at the thickness booth's panel sizes. The stud wall is the same at every thickness."
+/>
+
+<Gallery
+  cols={2}
+  items={[
+    { src: "projects/acoustic-occlusion/thickness-stud.jpg", alt: "Two stud wall faces of the thickness booth. Their placards read STUD WALL X0.5 5.75 cm and STUD WALL X1 11.5 cm, both with loss 16 / 46 / 45 dB and heard 8 / 23 / 22.5 dB.", label: "Stud wall, half and full thickness", width: 1920, height: 1080 },
+    { src: "projects/acoustic-occlusion/thickness-plywood.jpg", alt: "Three plywood faces of the thickness booth. Their placards read loss 14 / 18.5 / 24 dB at 1.27 cm, 18 / 20.5 / 29 dB at 2.54 cm and 22 / 22.5 / 34 dB at 5.08 cm.", label: "Plywood, one, two and four sheets", width: 1920, height: 1080 },
+  ]}
+  caption="The thickness booth has plywood, concrete and stud wall at four thicknesses each. Each placard shows what the plugin computes for its face."
+/>
+
+Physics has about 100 dB of range and a game wants about 25, so the plugin halves the physical loss and caps it at 30 dB per band. Nobody vanishes behind one wall.
+
+The drawer rule bit me once. A physics contact point lies on a surface or up to about a centimetre inside it, so impact sounds started inside the floor and played 15 to 20 dB down through it. The fix belongs to whoever places the sound, so my impact effects now lift every sound 5 cm along the contact normal.
+
+## Threads
+
+Traces can't run on the audio render thread, and the render thread can't wait for them, so each voice passes through four threads.
+
+<Flow
+  steps={[
+    { title: "Audio thread", body: "The source data override writes each voice's emitter, listener and settings into its slot" },
+    { title: "Game thread", body: "The subsystem picks voices within 32 rays a frame and queues async traces" },
+    { title: "Trace workers", body: "The engine's async trace queue runs the scene queries" },
+    { title: "Game thread, next tick", body: "Exit recasts, materials and band math, then three gains per voice are published" },
+    { title: "Audio render thread", body: "The occlusion plugin reads the gains without a lock and ramps the EQ" },
+  ]}
+  caption="One voice's trip through the threads, once per update."
+/>
+
+Each slot carries a generation number, so when the engine reuses a slot for a new sound, a result traced for the old one is dropped on arrival. The published gains are three relaxed atomics per voice. A read can mix two publishes within one buffer, and the smoothing hides it.
+
+The render thread's first buffer can't wait a frame, or a sound that starts behind a wall blips through open. So a new voice starts from the same owner's last result near the same spot (the next footstep), or else one synchronous test trace. Book drops caught a bug there. `SpawnSoundAtLocation` makes the world settings the owner of every sound placed without an actor, so a book dropped right after one that landed behind a wall borrowed that result and started quiet. Its attack, about 85 ms, was over before its own trace landed. Placed sounds now trace their own seed.
+
+## Doorways
+
+Transmission alone gets direction wrong. If a wall blocks the straight line and an open door stands three metres to the left, you should hear the sound from the door, because sound bends round its edges. Each room is an `AAcousticRoom` actor, and each doorway or window gets a `UAcousticPortalComponent`, a box fitted to the opening. For a sound in another room, the subsystem lists every path through up to three doorways, pulls the four shortest tight round each rim at the Keller apex (the edge point that makes the path shortest), and sums the two that carry the most sound. Each leg is cast as a ray too, so a sofa in the way still counts.
+
+<Player
+  src="projects/acoustic-occlusion/doorway-walk.mp4"
+  poster="projects/acoustic-occlusion/doorway-walk-poster.jpg"
+  width={1920}
+  height={1080}
+  caption="The same walk past the lab doorway with portals off, then on. With portals on, a magenta path runs from the listener through the doorway to the speaker, beside the red rays through the wall. The small red marks are the wall pieces described under Rooms."
+/>
+
+Each doorway is priced with Kurze-Anderson, an empirical fit to Maekawa's barrier curve, summed over the opening's edges and capped at 25 dB. It gives 5 dB at grazing and nothing once an edge clears the line by about a tenth of a wavelength, 18 cm in the low band and 1.2 cm in the high.
+
+<Figure
+  src="projects/acoustic-occlusion/chart-diffraction-kurze-anderson.png"
+  alt="Line chart of diffraction loss against the extra path length over one edge, for 177 Hz, 705 Hz and 2.8 kHz. All three pass through 5 dB at zero. At 200 cm they reach about 16, 22 and 28 dB, with a dashed line marking the 25 dB cap per doorway."
+  width={1800}
+  height={1044}
+  caption="Kurze-Anderson loss for one edge at the three band centres."
+/>
+
+Steam Audio prices the angle a path turns, with a UTD model (after Tsingos et al., SIGGRAPH 2001) that Valve made gentler on purpose in v4.7, three to five times gentler than the physics deep in the shadow. A numerical check against Biot-Tolstoy-Medwin edge diffraction for a 0.9 by 2.1 m door put Kurze-Anderson within about 1.3 dB RMS. With the same halving as the walls, the two land within about a decibel of each other.
+
+| Computed for a 90 degree bend, 2 m and 1 m legs | Low | Mid | High |
+|---|---:|---:|---:|
+| Kurze-Anderson, halved like the walls | 6.1 dB | 9.0 dB | 12.0 dB |
+| Steam Audio's shipped UTD with its spreading, 1/r falloff | 5.3 dB | 7.8 dB | 12.1 dB |
+
+Physics is the default, and Steam's `utdDeviation` is ported line for line (Apache-2.0, credited in the source) as an A/B behind `au.AcousticOcclusion.DiffractionModel 1`.
+
+The engine applies distance attenuation from the true position before my override runs, so the detour's extra distance becomes a gain from the sound's own attenuation curve, less the spreading Kurze-Anderson already counts. The heard position moves toward each path's first bend by its share of the mid-band energy, and the audio thread glides it into `FWaveInstance::Location`.
+
+My first pass got two things wrong. It bent twice per doorway, once at each face of the wall, when one bend at the mid-plane is within 1 dB for walls up to 30 cm thick. And it treated a shut door as no path. Round a corner, a shut hollow door plus its diffraction is still louder than the stud wall beside it, and it keeps the sound's direction at the door. So every door now has two ways through. The air way is a strip on the latch side, `2W·sin(θ/2)` wide for a door W wide at hinge angle θ, faded out below 9 cm. The leaf way is the door's own material, weighted by how shut it is.
+
+Paths and wall rays add as energy, with one catch. A wall ray that already passes through a path's doorways is the same sound as the path, so the plugin counts it once, as `unseen + Σ max(seen, path)`. With no path, that reduces to the wall-only result exactly. In one test scene the path also turns the heard direction about 21 degrees toward the jamb.
+
+| A source behind a wall, beside a doorway | Low | Mid | High |
+|---|---:|---:|---:|
+| Through the wall alone | 10.0 dB | 20.0 dB | 30.0 dB |
+| Wall plus the path round the jamb | 8.4 dB | 16.7 dB | 21.9 dB |
+
+A door test found my favourite bug, and the run passed 35 of 36. The "has this door moved?" check ran before the frame's path harvest. In the frame the shut-door pricing landed, the voice compared itself with the open-door paths it was about to drop and queued one more update. When the door then moved to 10 degrees, those legs were still in flight and held up the new pricing, so the stale shut result went out. Moving the check after the harvest fixed it. The mid band now reads 16.73 dB open, 16.98 at 10 degrees ajar and 20.00 shut.
+
+<Annotated
+  src="projects/acoustic-occlusion/portal-debug.jpg"
+  alt="Plan view straight down on the lab doorway in the debug view. On the left a listener stands in the hall beside the wall. A magenta path runs from the listener to the end of the wall, turns through the doorway's cyan portal box and crosses the lab to a glowing speaker inside the booth. A bundle of red rays runs straight from the listener through the wall and the booth's concrete face to the speaker. The on-screen line reads L 6.5 / M 9.4 / H 12.4 dB, via 1 doorway, 7.0 m, diffraction 10.9 / 16.7 / 22.7 dB, 100% of what's heard."
+  width={1920}
+  height={1080}
+  points={[
+    { x: 10.5, y: 84, label: "The listener, where every ray and path starts" },
+    { x: 23, y: 24, label: "The doorway's portal, a box fitted to the opening, cyan while open" },
+    { x: 23, y: 48, label: "The path bends once, at the end of the wall, and runs on to the speaker" },
+    { x: 35, y: 67, label: "The 13 wall rays go straight through the wall and the booth's concrete face" },
+    { x: 47, y: 4.5, label: "The path carries all of what's heard, 6.5 / 9.4 / 12.4 dB" },
+  ]}
+  caption="Straight down on the lab doorway, with the ceilings, the lintel and the booth roof hidden from the camera."
+/>
+
+## Rooms
+
+The same room actors carry reverb. Each sound excites its own room's reverb, and a neighbouring room's reverb reaches you through the doorways and walls, each piece of wall priced by its traced material and thickness. My first version was a reverb plugin, and I retired it the same evening, because its audio moved through a side channel that neither the submix graph nor Audio Insights could show. The native version sends each voice to its room's submix at the engine's pre-distance stage. That took one engine fix, because the engine mixed an HRTF voice's mono pre-distance buffer as stereo.
+
+## Budgets
+
+I haven't profiled it on a Quest 3 yet, so each number below is a default, arithmetic on the defaults, or my own budget.
+
+| | Value | Where it comes from |
+|---|---|---|
+| Rays per world per frame, all voices | 32 | Plugin default |
+| Rays per voice update, of 13 | 4 | Plugin default |
+| Updates per voice | 15 Hz | Plugin default |
+| Worst case, 12 occluded voices | About 720 multi-traces a second, 10 a frame at 72 Hz | 12 voices × 4 rays × 15 Hz |
+| Frame target for traces | Under 0.5 ms a frame | My budget |
+| EQ, about 6 occluded mono voices | About 1% of one core | Estimate from 8 to 10 biquads per channel |
+
+Virtualized sounds cost nothing, since the engine only calls the source data override for real voices.
+
+## Debug view
+
+| Console variable | What it shows or changes |
+|---|---|
+| `au.AcousticOcclusion.Debug 1` | Rays coloured by mid-band loss, layers, portals, paths, rooms and each voice's band losses |
+| `au.AcousticOcclusion.Disable 1` | Open gains for every voice, for A/B |
+| `au.AcousticOcclusion.Portals 0` | Other rooms heard only through walls and doors |
+| `au.AcousticOcclusion.DiffractionModel 1` | Steam Audio's UTD in place of Kurze-Anderson |
+| `au.AcousticOcclusion.RoomWalls 0` | A neighbouring room's reverb heard only from its doorways |
+
+A line drawn from your own head is a single point to your own eye, so the rays start 30 cm below the head and rise to meet the real ray at each sample point.
+
+## Tests
+
+<Stats items={[
+  { value: "61 / 61", label: "automation tests passing" },
+  { value: "0.05 cm", label: "worst traced thickness error across the lab's 23 panels" },
+  { value: "1.3 dB", label: "Kurze-Anderson RMS error against exact edge diffraction" },
+  { value: "13", label: "rays per sound" },
+]} />
+
+The portal tests check the rim point against 8,000 sampled rim points, and the doorway tests' expected values were computed offline with the same formulas. The trap worth passing on is that a physical material created inside a test is invisible to scene queries until the world ticks once, because hits read the solver's query-side copy of the materials. Two trace tests failed because of it, and a third passed for the wrong reason.
+
+## Next
+
+The next step is a Quest 3 build with Unreal Insights open, to turn every estimate in the budget table into a measurement. Until then, here's one walk from the hall to the booth.
+
+<Player
+  src="projects/acoustic-occlusion/full-walk.mp4"
+  poster="projects/acoustic-occlusion/full-walk-poster.jpg"
+  width={1920}
+  height={1080}
+  caption="Hall to doorway to booth, with occlusion, portals and room reverb on."
+/>
