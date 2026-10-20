@@ -17,7 +17,7 @@ import Flow from '../../components/article/Flow.astro';
 import Callout from '../../components/article/Callout.astro';
 import Stats from '../../components/article/Stats.astro';
 
-<Lede>Every chapter of the VR game I'm building is one StateTree asset that reads top to bottom as its beats. A tree waiting on the player doesn't tick, a load is a restart in which every finished beat skips itself, and 62 automation tests cover both.</Lede>
+<Lede>Every chapter of the VR game I'm building is one StateTree asset that reads top to bottom as its beats. A tree waiting on the player doesn't tick, and a load is a restart in which every finished beat skips itself.</Lede>
 
 <Loop
   src="projects/modular-story/story-run.mp4"
@@ -25,7 +25,7 @@ import Stats from '../../components/article/Stats.astro';
   width={1920}
   height={1080}
   label="Play In Editor"
-  caption="The gym's test chapter. Story.State reports the mug as held, so the Grab gate passes. Took Mug waits a second, then Lights Out's effect turns the lamp off. I drew the panel from this run's StateTree log."
+  caption="The gym chapter. Story.State reports the mug as held, so the Grab gate passes. Took Mug waits a second, then Lights Out's effect turns the lamp off. I drew the panel from this run's StateTree log."
 />
 
 <Facts items={[
@@ -33,7 +33,6 @@ import Stats from '../../components/article/Stats.astro';
   { label: "Built on", value: "StateTree and GameplayStateTree" },
   { label: "Platforms", value: "PC VR and standalone headsets" },
   { label: "Plugins", value: "ModularStory, ModularStorySUDS, StateTree​Toolset​Extensions" },
-  { label: "Tests", value: "62 for the story, 7 for the SUDS bridge" },
 ]} />
 
 ## What I built on
@@ -71,7 +70,7 @@ The first design on the table was Blueprint beat actors. I turned it down, becau
 
 StateTree had the second-highest estimate, and it met every requirement. Tasks in one state run together, so a gate and a sound loop share a beat. ExitState runs on every task that entered, which makes undoable effects nearly free. The closest prior art I found is Naughty Dog's state scripts, from Jason Gregory's GDC 2009 talk "State-Based Scripting in Uncharted 2: Among Thieves". Their states, tracks and signals map almost one to one onto StateTree's states, tasks and events.
 
-A spike came first, with Flow Graph as the fallback if any of four switch conditions failed. Three of them are automation tests on the real director, and they pass. A gate ends its beat and the loop beside it, a fact write wakes a sleeping tree, and an effect survives a sustained re-entry. The fourth, a 14-beat chapter that reads well in the stock editor, is mine to judge.
+A spike came first, with Flow Graph as the fallback if StateTree missed any of four conditions. On the real director, a gate ended its beat and the loop beside it, a fact write woke a sleeping tree, and an effect survived a sustained re-entry. The fourth, a 14-beat chapter that reads well in the stock editor, is mine to judge.
 
 ## A schema of its own
 
@@ -105,7 +104,7 @@ Blueprint nodes can't be fenced in like this, because the component schema allow
 
 The director is an actor with a `UStoryTreeComponent`, whose `GetSchema` returns the story schema. That override filters the director's tree picker to story trees, and `HasValidStateTreeReference` refuses any other tree at run time. It starts a chapter through `StartLogic`, the path that installs the hook which wakes a sleeping tree.
 
-The first test run passed 5 of 12. The other 7 failed with "Malformed task, missing instance value." The StateTree compiler refuses a node without instance data, and my Beat task and the tests' probe had none, so the story's node bases now give every child an empty instance struct, as UAF's condition base does.
+My first Beat task had no instance data, and the StateTree compiler refused it with "Malformed task, missing instance value." The story's node bases now give every child an empty instance struct, as UAF's condition base does.
 
 ## A beat is a state
 
@@ -113,7 +112,7 @@ A beat is a state with a Beat task on it. The Beat task's tag, such as `Beat.Vau
 
 <Annotated
   src="projects/modular-story/editor-overview.png"
-  alt="The stock StateTree editor with the gym's test chapter open. The tree view lists the beats in order. The details panel shows the Knock beat, with the Beat section on top, its skip condition, its Beat task and its Look gate."
+  alt="The stock StateTree editor with the gym chapter open. The tree view lists the beats in order. The details panel shows the Knock beat, with the Beat section on top, its skip condition, its Beat task and its Look gate."
   width={1627}
   height={753}
   points={[
@@ -124,7 +123,7 @@ A beat is a state with a Beat task on it. The Beat task's tag, such as `Beat.Vau
     { x: 81.0, y: 76.5, label: "The Beat task, which sets its fact as the beat ends" },
     { x: 81.6, y: 88.4, label: "The gate, the only task considered for completion" },
   ]}
-  caption="The gym's test chapter in the stock StateTree editor, with the Knock beat selected."
+  caption="The gym chapter in the stock StateTree editor, with the Knock beat selected."
 />
 
 Writing the skip condition by hand on 60 beats is how progression bugs get in, so the editor writes it. ModularStoryEditor registers an editor schema for the story schema, and the editor calls its `PreValidate` whenever it validates a tree, which is on every edit and every compile. It keeps each beat's skip condition last, joined with And at the top level, so a past beat never enters. It runs before the engine fixes up state links, so a link to a renamed beat follows the new name. And it names each beat after its tag, so `Beat.Vault.FindKey` becomes Find Key, unless someone typed a name by hand.
@@ -268,7 +267,7 @@ ModularStorySUDS mirrors each fact as a SUDS Pro global, so a dialogue script re
 
 ## Driving a run from the console
 
-Four console commands cover most of my testing, and none of them exist in Shipping builds. `Story.Fact Vault.TookKey` sets a fact to 1, or to a value after the tag, which passes a fact gate by hand. `Story.State Vault.Door Open` reports a state on a handle as if its actor had, so I can pass a handle gate without a headset. `Story.Pass` marks the innermost running beat past and restarts the chapter, so the next beat begins.
+Four console commands do most of the driving, and none of them exist in Shipping builds. `Story.Fact Vault.TookKey` sets a fact to 1, or to a value after the tag, which passes a fact gate by hand. `Story.State Vault.Door Open` reports a state on a handle as if its actor had, so I can pass a handle gate without a headset. `Story.Pass` marks the innermost running beat past and restarts the chapter, so the next beat begins.
 
 `Story.Jump <beat>` is a load with made-up facts. It reads the chapter the way it runs, into subtrees and linked templates, and finds the first beat with that tag or one under it. Then it stops the chapter, rewrites the beat facts around it and starts the chapter again.
 
@@ -293,35 +292,11 @@ Story.Jump started ST_GymNight again at Beat.GymNight.Choose.
 
 The restarted root skips Wake Up, Knock and Through, whose facts the jump set, and enters Pick inside Choose.
 
-## Tests on the real director
-
-ModularStoryTests builds story trees in code with StateTree's own compiler, as Epic's `StateTreeTestSuite` does, and runs them on a real `AStoryDirector` in a game world. A probe task logs each enter and exit and marks the sustained ones.
-
-<Stats items={[
-  { value: "62", label: "ModularStory tests" },
-  { value: "7", label: "SUDS bridge tests" },
-  { value: "0", label: "failures in the last headless run" },
-]} />
-
-| Test | What it proves |
-|---|---|
-| `ModularStory.Tree.FactWriteWakesSleepingTree` | A tree waiting on a gate turns its tick off, and a fact write wakes it |
-| `ModularStory.Tree.LinkedTemplateSkipsPastBeats` | After a save, stop, restore and start, beats inside a linked template skip themselves |
-| `ModularStory.Tree.EffectSurvivesSustainedReentry` | A child going back to its parent neither undoes nor re-applies the parent's effect |
-| `ModularStory.Editor.CompileChecksBeats` | All three beat mistakes fail the compile, each with its own error |
-| `ModularStory.Jump.GivesWayToTheBeatsOwnPlacePlayer` | When the beat's own Place Player moves the player first, the jump doesn't move them back |
-
-<Callout title="The second run failed in my test world" tone="note">
-
-The spike's second run passed 11 of 12. A test runs inside one engine frame, and the tick manager runs a tick function at most once per frame counter, so a tree that had ticked once never ticked again. The test world now advances `GFrameCounter` after each world tick, as Epic's `FTestWorldWrapper` does, and the third run passed all 12.
-
-</Callout>
-
 ## What's still open
 
-Checkpoints and the save itself are still to come. The load order runs in tests on the real director, but no checkpoint calls it yet, and the save doesn't keep persistent state writes. Answer, the gate that takes a nod or a shake, polls ten times a second, because XRViewpoint's gesture event is a dynamic delegate and a task is a struct that can't bind one. Look Away, Wait For Event and Timed gates come next. A card-view Beat Sheet tab waits until the stock editor proves slow, since a review called it over-built for one person and about 60 beats.
+Checkpoints and the save itself are still to come. The load order is in place, but no checkpoint calls it yet, and the save doesn't keep persistent state writes. Answer, the gate that takes a nod or a shake, polls ten times a second, because XRViewpoint's gesture event is a dynamic delegate and a task is a struct that can't bind one. Look Away, Wait For Event and Timed gates come next. A card-view Beat Sheet tab waits until the stock editor proves slow, since a review called it over-built for one person and about 60 beats.
 
-The next test I want walks every chapter end to end with `Story.Pass`, so a progression stopper fails a test run before it strands a player. By hand, in the gym chapter, the walk looks like this, trimmed the same way.
+Running `Story.Pass` once per beat walks a whole chapter. Here's the gym chapter, trimmed the same way.
 
 ```log title="Output Log" {4,7,10,13}
 LogStateTree: StoryDirector_1: Enter state 'Root(0); Wake Up(1)' (1)

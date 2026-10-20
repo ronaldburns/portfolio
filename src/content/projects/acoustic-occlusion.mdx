@@ -13,7 +13,6 @@ import Loop from '../../components/article/Loop.astro';
 import Player from '../../components/article/Player.astro';
 import Annotated from '../../components/article/Annotated.astro';
 import Gallery from '../../components/article/Gallery.astro';
-import Stats from '../../components/article/Stats.astro';
 import Flow from '../../components/article/Flow.astro';
 import Lede from '../../components/article/Lede.astro';
 import Facts from '../../components/article/Facts.astro';
@@ -33,7 +32,6 @@ Stock Unreal Engine 6 muffles a sound when one line trace hits anything, so a ch
 <Facts items={[
   { label: "Engine", value: "Unreal Engine 6, C++" },
   { label: "Platforms", value: "PC VR and standalone Quest 3" },
-  { label: "Tests", value: "61 automation tests, all passing" },
 ]} />
 
 ## Stock occlusion
@@ -235,14 +233,14 @@ The engine applies distance attenuation from the true position before my overrid
 
 My first pass got two things wrong. It bent twice per doorway, once at each face of the wall, when one bend at the mid-plane is within 1 dB for walls up to 30 cm thick. And it treated a shut door as no path. Round a corner, a shut hollow door plus its diffraction is still louder than the stud wall beside it, and it keeps the sound's direction at the door. So every door now has two ways through. The air way is a strip on the latch side, `2W·sin(θ/2)` wide for a door W wide at hinge angle θ, faded out below 9 cm. The leaf way is the door's own material, weighted by how shut it is.
 
-Paths and wall rays add as energy, with one catch. A wall ray that already passes through a path's doorways is the same sound as the path, so the plugin counts it once, as `unseen + Σ max(seen, path)`. With no path, that reduces to the wall-only result exactly. In one test scene the path also turns the heard direction about 21 degrees toward the jamb.
+Paths and wall rays add as energy, with one catch. A wall ray that already passes through a path's doorways is the same sound as the path, so the plugin counts it once, as `unseen + Σ max(seen, path)`. With no path, that reduces to the wall-only result exactly. For the source in the table below, the path also turns the heard direction about 21 degrees toward the jamb.
 
 | A source behind a wall, beside a doorway | Low | Mid | High |
 |---|---:|---:|---:|
 | Through the wall alone | 10.0 dB | 20.0 dB | 30.0 dB |
 | Wall plus the path round the jamb | 8.4 dB | 16.7 dB | 21.9 dB |
 
-A door test found my favourite bug, and the run passed 35 of 36. The "has this door moved?" check ran before the frame's path harvest. In the frame the shut-door pricing landed, the voice compared itself with the open-door paths it was about to drop and queued one more update. When the door then moved to 10 degrees, those legs were still in flight and held up the new pricing, so the stale shut result went out. Moving the check after the harvest fixed it. The mid band now reads 16.73 dB open, 16.98 at 10 degrees ajar and 20.00 shut.
+Doors gave me my favourite bug. The "has this door moved?" check ran before the frame's path harvest. In the frame the shut-door pricing landed, the voice compared itself with the open-door paths it was about to drop and queued one more update. When the door then moved to 10 degrees, those legs were still in flight and held up the new pricing, so the stale shut result went out. Moving the check after the harvest fixed it. The mid band now reads 16.73 dB open, 16.98 at 10 degrees ajar and 20.00 shut.
 
 <Annotated
   src="projects/acoustic-occlusion/portal-debug.jpg"
@@ -289,17 +287,6 @@ Virtualized sounds cost nothing, since the engine only calls the source data ove
 | `au.AcousticOcclusion.RoomWalls 0` | A neighbouring room's reverb heard only from its doorways |
 
 A line drawn from your own head is a single point to your own eye, so the rays start 30 cm below the head and rise to meet the real ray at each sample point.
-
-## Tests
-
-<Stats items={[
-  { value: "61 / 61", label: "automation tests passing" },
-  { value: "0.05 cm", label: "worst traced thickness error across the lab's 23 panels" },
-  { value: "1.3 dB", label: "Kurze-Anderson RMS error against exact edge diffraction" },
-  { value: "13", label: "rays per sound" },
-]} />
-
-The portal tests check the rim point against 8,000 sampled rim points, and the doorway tests' expected values were computed offline with the same formulas. The trap worth passing on is that a physical material created inside a test is invisible to scene queries until the world ticks once, because hits read the solver's query-side copy of the materials. Two trace tests failed because of it, and a third passed for the wrong reason.
 
 ## Next
 

@@ -155,7 +155,7 @@ float ToonCharacterDepthEdgeAt(FToonCharacterMaterial M, int2 Pixel)
 }
 ```
 
-The step is a fraction of the view's height, and with edge antialiasing on it tests the four pixels around the step's end and blends them, so the band's inner edge slides smoothly instead of jumping a pixel at a time. To check the direction mapping, I measured every lit pixel within 2.5 px of the background on the outermost silhouette, 14.6K of them. None got darker in any outward direction.
+The step is a fraction of the view's height, and with edge antialiasing on it samples the four pixels around the step's end and blends them, so the band's inner edge slides smoothly instead of jumping a pixel at a time.
 
 ## Eyes over the bangs
 
@@ -203,7 +203,7 @@ The outlines are inverted hulls, one of the oldest tricks in toon rendering. Dra
 
 Two pieces were missing. Materials had no way to cull front faces, so I added a Cull Front Faces flag to `UMaterial` and reversed the mesh pass's cull mode for it. The bigger gap was the normals. A hull pushed along split normals cracks at every hard edge, so it needs smooth normals that the mesh's shading doesn't use. My ToonOutline plugin bakes them. It welds vertices by position, averages angle-weighted face normals in double precision, and stores the result in tangent space in a pair of spare UV channels, along with a coherence value, the length of the weighted normal sum over the sum of weights. Where the faces around a vertex disagree, at a sharp corner, coherence drops and the line tapers instead of spiking.
 
-Recomputing a mesh's normals throws the authored ones away, and the bake then happily averages garbage. The baker now refuses meshes with recomputed normals, and an automation test pins that behaviour.
+Recomputing a mesh's normals throws the authored ones away, and the bake then happily averages garbage. The baker now refuses meshes with recomputed normals.
 
 The width is set in screen space, so lines keep their weight as the camera moves. VR broke the minimum width. The old floor only held to about 1.8 m in a Quest, and past that the line went under a pixel. Anything under a pixel wide crawls in a headset, so my floor is a whole number of pixels at every depth.
 
@@ -246,7 +246,7 @@ Point and spot lights in a level light everything with the same falloff. On a to
 | Fog Fade | Fades her toward the light's colour like fog, up to four per pixel |
 | Ignore Character | Skips her entirely |
 
-The settings ride on the local light component and get packed into the forward light grid next to the stock light data, where the character path reads them per pixel. An automation test pins the packed struct sizes, because a byte of drift there corrupts every light after it.
+The settings ride on the local light component and get packed into the forward light grid next to the stock light data, where the character path reads them per pixel.
 
 <Loop src="projects/endfield-toon-renderer/ramped-light.mp4" poster="projects/endfield-toon-renderer/ramped-light-poster.jpg" width={1200} height={900} label="Ramped light" caption="One warm ramped point light circling her. Her hair takes it in bands." />
 

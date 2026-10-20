@@ -20,7 +20,7 @@ import Callout from '../../components/article/Callout.astro';
 
 <Player src="projects/context-effects/mug-on-five-floors.mp4" poster="projects/context-effects/mug-on-five-floors-poster.jpg" width={1920} height={1080} caption="The same mug on tile, carpet, steel, concrete and wood, with sound. The recordings come from BOOM Library's Boom ONE." />
 
-<Facts items={[{ label: 'Engine', value: 'Unreal Engine 6, C++' }, { label: 'Started from', value: "Epic's Lyra sample" }, { label: 'Targets', value: 'PC VR and Quest-class headsets' }, { label: 'Engine changes', value: 'None' }, { label: 'Tests', value: '204 automation tests' }]} />
+<Facts items={[{ label: 'Engine', value: 'Unreal Engine 6, C++' }, { label: 'Started from', value: "Epic's Lyra sample" }, { label: 'Targets', value: 'PC VR and Quest-class headsets' }, { label: 'Engine changes', value: 'None' }]} />
 
 ## What came from Lyra
 
@@ -135,7 +135,7 @@ A whoosh follows a prop's total speed, so a thrown prop whooshes as well as a fa
 
 <Callout tone="warn" title="Impacts used to play from inside the floor">
 
-A sound used to start at the contact point. In my test level, a dropped book's impacts played from up to 1.2 cm under the floor, and my acoustic occlusion plugin treated them like any sound behind a slab. They came out 15 to 20 dB quieter, in the outside reverb instead of the hall's. Every sound now starts 5 cm out along the contact normal, and a test checks the lift on a floor, on a ceiling and for a contact with no normal.
+A sound used to start at the contact point. In my test level, a dropped book's impacts played from up to 1.2 cm under the floor, and my acoustic occlusion plugin treated them like any sound behind a slab. They came out 15 to 20 dB quieter, in the outside reverb instead of the hall's. Every sound now starts 5 cm out along the contact normal.
 
 </Callout>
 
@@ -154,7 +154,7 @@ I use a small base MetaSound for each kind of sound and a preset of it per surfa
 
 <Callout tone="warn" title="An interface update that hung the editor">
 
-When version 1.2 of my interface replaced 1.1, the editor hung as soon as anything loaded a MetaSound saved against 1.1. To upgrade an asset, the builder removes the old version's members by looking up the interface's other registered versions. Version 1.1 wasn't registered any more, so the versioning loop never finished. Epic keeps old versions of its own output-format interfaces registered. Now 1.1 stays registered next to 1.2, and a test named ContextEffects.Audio.InterfaceUpgrade covers it.
+When version 1.2 of my interface replaced 1.1, the editor hung as soon as anything loaded a MetaSound saved against 1.1. To upgrade an asset, the builder removes the old version's members by looking up the interface's other registered versions. Version 1.1 wasn't registered any more, so the versioning loop never finished. Epic keeps old versions of its own output-format interfaces registered. Now 1.1 stays registered next to 1.2.
 
 </Callout>
 
@@ -164,7 +164,7 @@ A week later I split that interface into the four above. The old one stays regis
 
 Contacts aren't the only source. A second component plays sounds from how something moves, such as a physics door as it swings or a bobble head when you shake it. Valve's Source SDK 2013 plays hinge and slide sounds from physics constraints, and from it I took velocities read from the solver, sleep gating and a direction axis.
 
-The component never ticks. One world subsystem updates every track in a single pass, and a sleeping body costs nothing, as does one more than 20 m from the listener. A rattle fires on a jolt, the change in velocity across a fixed 50 ms window. The subsystem keeps 12 samples at least 5 ms apart so the window always reaches back 50 ms, and a test checks it at 30, 90 and 400 fps. This is a bobble head's whole track.
+The component never ticks. One world subsystem updates every track in a single pass, and a sleeping body costs nothing, as does one more than 20 m from the listener. A rattle fires on a jolt, the change in velocity across a fixed 50 ms window. The subsystem keeps 12 samples at least 5 ms apart so the window always reaches back 50 ms, whatever the frame rate. This is a bobble head's whole track.
 
 | Setting | Value |
 |---|---|
@@ -218,7 +218,7 @@ Lyra's libraries are data assets in one long details panel. A walk event on 12 s
 
 My first replacement was a grid, and I rejected it. Its rows came from the tag tree instead of the library, so an empty library showed 12 red rows, and a cell could say "silent" in red while the Issues tab found nothing wrong. The rebuild is a rules table in the style of Unreal's Chooser. I passed on Chooser itself as the back end, since the same 12 surfaces at three weights would still take 36 rows there.
 
-The toolbar borrows Chooser's Debug Target menu. Pick Manual Testing and set tags by hand, or pick any actor that fired an event the library answered. Context cells turn green or red against the target, and rows that play are marked. The verdict column's tooltip gives the reason, such as "Plays" or "Needs Surface.Wood". Those verdicts come from an ExplainMatch function, and a test holds it equal to GetMatchingEntries, so the editor and the game agree on what plays.
+The toolbar borrows Chooser's Debug Target menu. Pick Manual Testing and set tags by hand, or pick any actor that fired an event the library answered. Context cells turn green or red against the target, and rows that play are marked. The verdict column's tooltip gives the reason, such as "Plays" or "Needs Surface.Wood". Those verdicts come from an ExplainMatch function that gets what plays from GetMatchingEntries, the same call the game makes, so the editor and the game always agree.
 
 ## Next
 
