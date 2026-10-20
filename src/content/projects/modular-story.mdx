@@ -2,7 +2,7 @@
 title: "ModularStory, a story director on StateTree"
 description: "A StateTree plugin that runs the story of the VR game I'm building. Finished beats skip themselves after a load, gates wait without ticking, and effects undo themselves when their state ends."
 date: "Oct 20, 2026"
-image: projects/modular-story/hero.jpg
+image: projects/modular-story/hero-v2.jpg
 tags: "Unreal Engine, C++, StateTree, Editor tools, VR, Gameplay"
 featured: true
 published: true
@@ -20,12 +20,12 @@ import Stats from '../../components/article/Stats.astro';
 <Lede>Every chapter of the VR game I'm building is one StateTree asset that reads top to bottom as its beats. A tree waiting on the player doesn't tick, and a load is a restart in which every finished beat skips itself.</Lede>
 
 <Loop
-  src="projects/modular-story/story-run.mp4"
-  poster="projects/modular-story/story-run.jpg"
-  width={1920}
-  height={1080}
+  src="projects/modular-story/story-run-v2.mp4"
+  poster="projects/modular-story/story-run-v2.jpg"
+  width={1600}
+  height={960}
   label="Play In Editor"
-  caption="The gym chapter. Story.State reports the mug as held, so the Grab gate passes. Took Mug waits a second, then Lights Out's effect turns the lamp off. I drew the panel from this run's StateTree log."
+  caption="The gym chapter in Play In Editor, with the StateTree debugger following the run. At two seconds Story.State marks the mug as held, so Pick's Grab gate passes. Took Mug waits a second, then Lights Out turns the lamp off."
 />
 
 <Facts items={[
@@ -129,8 +129,8 @@ A beat is a state with a Beat task on it. The Beat task's tag, such as `Beat.Vau
 Writing the skip condition by hand on 60 beats is how progression bugs get in, so the editor writes it. ModularStoryEditor registers an editor schema for the story schema, and the editor calls its `PreValidate` whenever it validates a tree, which is on every edit and every compile. It keeps each beat's skip condition last, joined with And at the top level, so a past beat never enters. It runs before the engine fixes up state links, so a link to a renamed beat follows the new name. And it names each beat after its tag, so `Beat.Vault.FindKey` becomes Find Key, unless someone typed a name by hand.
 
 <Loop
-  src="projects/modular-story/beat-tag-sync-zoom.mp4"
-  poster="projects/modular-story/beat-tag-sync-zoom.jpg"
+  src="projects/modular-story/beat-tag-sync-zoom-v2.mp4"
+  poster="projects/modular-story/beat-tag-sync-zoom-v2.jpg"
   width={1628}
   height={762}
   label="StateTree editor"
@@ -192,12 +192,12 @@ A Story Handle component names its actor with a gameplay tag such as `Vault.Door
 Look is the exception, since nothing fires an event when someone looks at something. It samples the gaze ten times a second on a world timer, so the tree stays asleep, and passes once the player has looked at the actor for its hold time, 2 seconds by default, like Hammer's `trigger_look`. Looking away starts the hold over, and by default the actor has to be in line of sight. The gaze comes from my XRViewpoint plugin, which uses the eyes when the headset tracks them and the head when it doesn't. Its debug view boxes whatever gameplay asks it about and the props nearby, green for anything the player is looking at.
 
 <Loop
-  src="projects/modular-story/look-gate-debug.mp4"
-  poster="projects/modular-story/look-gate-debug.jpg"
-  width={1920}
-  height={1080}
+  src="projects/modular-story/look-gate-debug-v2.mp4"
+  poster="projects/modular-story/look-gate-debug-v2.jpg"
+  width={1640}
+  height={1356}
   label="Play In Editor"
-  caption="xr.Gaze.Debug 2 during the Knock beat. The bar fills while the readout's Looking at line lists the lever door, and a glance at the unlocked door empties it. Two unbroken seconds pass the gate into Through. I drew the panel and chip from this run's log."
+  caption="xr.Gaze.Debug 2 during the Knock beat, with the StateTree debugger under it. The box around whatever the camera looks at turns green. The first look at the lever door lasts 1.5 seconds, and a glance at the unlocked door starts the hold over. Two unbroken seconds on the lever door pass the gate, and the debugger moves to Through."
 />
 
 Any gate can also send an Outcome Event, so two gates in one state, each with a transition on its event, branch on whichever passes first.

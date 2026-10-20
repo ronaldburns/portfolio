@@ -408,8 +408,7 @@ article .content .ar-callout {
 	gap: 0.85rem;
 	padding: 1rem 1.25rem 1.05rem 1rem;
 	border: 1px solid var(--ar-rule);
-	border-left: 3px solid var(--ar-tone);
-	border-radius: 0 var(--ar-radius-md) var(--ar-radius-md) 0;
+	border-radius: var(--ar-radius-md);
 	background: color-mix(in oklab, var(--ar-panel) 60%, transparent);
 	font-size: 1rem;
 	line-height: 1.65;
