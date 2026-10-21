@@ -3,229 +3,239 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import CanvasKitInit, { type Canvas, type Color, type TextStyle } from 'canvaskit-wasm/full';
+import CanvasKitInit, { type Canvas, type Paragraph, type TextStyle } from 'canvaskit-wasm/full';
 import sharp from 'sharp';
 import { originalUrl } from '../../lib/images';
 
-// Link preview cards for Discord, X and the like, served at /og/<id>.jpg. Every card has my name in the top
-// left, where the site's header has it. A post with a hero image gets that image and nothing else, since every
-// platform already prints the title as text and X lays its own title box over the bottom of the image. A post
-// without one gets its title under the name on a dark card, kept clear of that bottom quarter. sharp handles
-// the pictures and CanvasKit draws the text with the site's own Cal Sans, so a card built on the CI runner
-// matches one built here whatever fonts the machine has. Runs at build time only.
+// Link preview cards for Discord, X and the like, served at /og/<id>.jpg. Every card is the same template, so one
+// in a feed reads as mine before anyone reads the words: my name in the top left where the site's header has it,
+// the post's date over its title, and the hero image in a rounded plate on the right. A post without a hero gets
+// a bigger title instead. The bottom left stays clear because X lays its own headline box there. sharp handles
+// the pictures and CanvasKit draws the text with the site's own fonts, so a card built on the CI runner matches
+// one built here whatever fonts the machine has. Runs at build time only.
 
 const W = 1200;
 const H = 630;
 const JPEG = { quality: 88, mozjpeg: true, chromaSubsampling: '4:4:4' } as const;
-// Cal Sans capitals stand 0.7 em tall, measured from its H.
+// The margin on every side, and where the hero's plate starts.
+const M = 60;
+const PLATE_X = 520;
+const PLATE_RADIUS = 18;
+// Cap heights in em, measured from each font's H.
 const CAP = 0.7;
-// Where the name sits on every card, in the site header's corner.
-const NAME_X = 60;
-const NAME_BASELINE = 84;
-const NAME_SIZE = 40;
+const DATE_CAP = 0.67;
+const NAME_SIZE = 36;
+const DATE_SIZE = 26;
+// From the date's baseline to the title's cap top.
+const DATE_GAP = 30;
 
 const CanvasKit = await CanvasKitInit({
 	locateFile: (file) => createRequire(import.meta.url).resolve(`canvaskit-wasm/bin/full/${file}`),
 });
 const fonts = CanvasKit.TypefaceFontProvider.Make();
 fonts.registerFont(await readFile(path.join(process.cwd(), 'public/fonts/CalSans-SemiBold.ttf')), 'Cal Sans');
+fonts.registerFont(await readFile(path.join(process.cwd(), 'src/assets/fonts/atkinson-regular.woff')), 'Atkinson');
 
+// Zinc-900 rather than the page's near-black, so a card keeps its edge on X's black and Discord's dark grey.
+// Purple only marks the name and the plate's frame. The name is Tailwind's purple-400, the site's accent, and the
+// frame is Radix's purple 7, the step its dark purple scale keeps for borders.
+const GROUND = CanvasKit.Color(24, 24, 27);
 const WHITE = CanvasKit.Color(250, 250, 250);
 const MUTED = CanvasKit.Color(161, 161, 170);
+const PURPLE = CanvasKit.Color(194, 122, 255);
+const FRAME = CanvasKit.Color(102, 66, 130);
 
-function paragraph(text: string, style: TextStyle, width: number) {
+function paragraph(text: string, style: TextStyle, family = 'Cal Sans') {
 	const builder = CanvasKit.ParagraphBuilder.MakeFromFontProvider(
-		new CanvasKit.ParagraphStyle({ textStyle: { fontFamilies: ['Cal Sans'], ...style } }),
+		new CanvasKit.ParagraphStyle({ textStyle: { fontFamilies: [family], ...style } }),
 		fonts,
 	);
 	builder.addText(text);
 	const p = builder.build();
 	builder.delete();
-	p.layout(width);
+	// Nothing here wraps on its own. Titles come in already broken into lines.
+	p.layout(100000);
 	return p;
 }
 
-// Draws onto a transparent card-sized layer and returns it as a PNG.
-function layer(draw: (canvas: Canvas) => void) {
-	const surface = CanvasKit.MakeSurface(W, H)!;
-	const canvas = surface.getCanvas();
-	canvas.clear(CanvasKit.TRANSPARENT);
-	draw(canvas);
-	const image = surface.makeImageSnapshot();
-	const png = Buffer.from(image.encodeToBytes()!);
-	image.delete();
-	surface.delete();
-	return png;
+// Draws p with its first baseline at y, then frees it.
+function drawAt(canvas: Canvas, p: Paragraph, x: number, y: number) {
+	canvas.drawParagraph(p, x, y - p.getLineMetrics()[0].baseline);
+	p.delete();
 }
 
-function nameParagraph(color: Color, shadows?: TextStyle['shadows']) {
-	return paragraph('Ronald Burns', { color, fontSize: NAME_SIZE, shadows }, W);
-}
-
-function drawName(canvas: Canvas, color: Color, shadows?: TextStyle['shadows']) {
-	const name = nameParagraph(color, shadows);
-	canvas.drawParagraph(name, NAME_X, NAME_BASELINE - name.getLineMetrics()[0].baseline);
-	name.delete();
-}
-
-const NAME_WIDTH = (() => {
-	const name = nameParagraph(WHITE);
-	const width = name.getLongestLine();
-	name.delete();
-	return width;
-})();
-
-// A soft light from the top left, so a card with nothing but text or a thin banner on it doesn't read as an
-// empty black box.
-function drawBackdrop(canvas: Canvas) {
-	const light = CanvasKit.Shader.MakeRadialGradient(
-		[180, 0],
-		900,
-		[CanvasKit.Color(39, 39, 42), CanvasKit.Color(9, 9, 11)],
-		null,
-		CanvasKit.TileMode.Clamp,
-	);
-	const paint = new CanvasKit.Paint();
-	paint.setShader(light);
-	canvas.drawPaint(paint);
-	paint.delete();
-	light.delete();
-}
-const backdrop = layer(drawBackdrop);
-
-// The name's corner fades into a soft copy of the picture along an ellipse, full strength around the name and
-// gone by x = 660 or y = 240.
-const VIGNETTE = Buffer.alloc(W * H);
-for (let y = 0; y < H; y++) {
-	for (let x = 0; x < W; x++) {
-		const t = Math.min(1, Math.max(0, (1 - Math.hypot(x / 660, y / 240)) / 0.45));
-		VIGNETTE[y * W + x] = Math.round(t * t * (3 - 2 * t) * 255);
+// Words never split. A spaced hyphen rides with the word before it, so "Toon Shading - Part 1" can't start a line
+// with the hyphen.
+function words(text: string) {
+	const out: string[] = [];
+	for (const word of text.split(/\s+/)) {
+		if (word === '-' && out.length) out[out.length - 1] += ' -';
+		else out.push(word);
 	}
+	return out;
 }
 
-// A flat colour over the same corner, at a fraction of the vignette's strength.
-function wash(background: { r: number; g: number; b: number }, opacity: number) {
-	const alpha = Buffer.alloc(W * H);
-	for (let i = 0; i < alpha.length; i++) alpha[i] = Math.round(VIGNETTE[i] * opacity);
-	return sharp({ create: { width: W, height: H, channels: 3, background } })
-		.joinChannel(alpha, { raw: { width: W, height: H, channels: 1 } })
-		.png()
-		.toBuffer();
+// Measures lines at one text style, remembering each width because the line breaking asks for the same lines
+// many times over.
+function measurer(style: TextStyle) {
+	const widths = new Map<string, number>();
+	return (line: string) => {
+		let width = widths.get(line);
+		if (width === undefined) {
+			const p = paragraph(line, style);
+			width = p.getMaxIntrinsicWidth();
+			p.delete();
+			widths.set(line, width);
+		}
+		return width;
+	};
 }
 
-// On most pictures the name is white with a soft dark halo. Where the corner is bright it's near black with a
-// light halo, over a light wash.
-const onDark = {
-	name: layer((canvas) =>
-		drawName(canvas, WHITE, [
-			{ color: CanvasKit.Color(0, 0, 0, 0.5), blurRadius: 14 },
-			{ color: CanvasKit.Color(0, 0, 0, 0.35), blurRadius: 3, offset: [0, 1] },
-		]),
-	),
-	wash: await wash({ r: 9, g: 9, b: 11 }, 0.3),
-};
-const onBright = {
-	name: layer((canvas) =>
-		drawName(canvas, CanvasKit.Color(24, 24, 27), [
-			{ color: CanvasKit.Color(255, 255, 255, 0.7), blurRadius: 14 },
-			{ color: CanvasKit.Color(255, 255, 255, 0.5), blurRadius: 3 },
-		]),
-	),
-	wash: await wash({ r: 250, g: 250, b: 250 }, 0.45),
-};
+// Fills lines up to width, measuring each candidate line whole.
+function fillLines(list: string[], measure: (line: string) => number, width: number) {
+	const lines: string[] = [];
+	let line = '';
+	for (const word of list) {
+		const next = line ? `${line} ${word}` : word;
+		if (line && measure(next) > width) {
+			lines.push(line);
+			line = word;
+		} else line = next;
+	}
+	if (line) lines.push(line);
+	return lines;
+}
 
-async function heroCard(src: string) {
+// Tries every way to break the words into count lines that fit, and keeps the evenest: the least squared shortfall
+// against the longest line. A title is a dozen words at most, so that's a few hundred tries.
+function balance(list: string[], measure: (line: string) => number, width: number, count: number) {
+	let best: { lines: string[]; cost: number; longest: number } | undefined;
+	const visit = (start: number, left: number, lines: string[]) => {
+		if (left === 1) {
+			const all = [...lines, list.slice(start).join(' ')];
+			const widths = all.map(measure);
+			const longest = Math.max(...widths);
+			if (longest > width) return;
+			const cost = widths.reduce((sum, w) => sum + (longest - w) ** 2, 0);
+			if (!best || cost < best.cost - 1e-6 || (Math.abs(cost - best.cost) <= 1e-6 && longest < best.longest)) {
+				best = { lines: all, cost, longest };
+			}
+			return;
+		}
+		for (let end = start + 1; end <= list.length - left + 1; end++) {
+			const line = list.slice(start, end).join(' ');
+			if (measure(line) > width) break;
+			visit(end, left - 1, [...lines, line]);
+		}
+	};
+	visit(0, count, []);
+	return best ? best.lines : fillLines(list, measure, width);
+}
+
+// The title at the biggest size from max down to min whose words fit in maxLines lines of width, broken as evenly
+// as possible. Its height runs from the first line's cap top to the last line's baseline.
+function setTitle(text: string, { max, min, width, maxLines }: { max: number; min: number; width: number; maxLines: number }) {
+	const style = (size: number): TextStyle => ({ color: WHITE, fontSize: size, heightMultiplier: 1.04, letterSpacing: -size / 100 });
+	const list = words(text);
+	let size = max;
+	let measure = measurer(style(size));
+	while (size > min && (fillLines(list, measure, width).length > maxLines || Math.max(...list.map(measure)) > width)) {
+		size -= 2;
+		measure = measurer(style(size));
+	}
+	const lines = balance(list, measure, width, fillLines(list, measure, width).length);
+	const p = paragraph(lines.join('\n'), style(size));
+	const metrics = p.getLineMetrics();
+	return { p, size, height: CAP * size + metrics[metrics.length - 1].baseline - metrics[0].baseline };
+}
+
+async function fetchHero(src: string) {
 	const res = await fetch(originalUrl(src));
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
-	const input = Buffer.from(await res.arrayBuffer());
-	// GIFs and animated WebPs give their first frame.
-	const frame = () => sharp(input, { pages: 1 }).flatten({ background: '#09090b' });
-	const { width = W, height = H, pageHeight = height } = await frame().metadata();
-
-	let picture;
-	const aspect = width / pageHeight;
-	if (aspect > 1.5 && aspect < 2.4) {
-		// Close enough to the card's shape to crop. The attention crop keeps the most striking part.
-		picture = frame().resize(W, H, { fit: 'cover', position: 'attention' });
-	} else {
-		// Cropping a portrait shot or a long banner to the card's shape would lose most of it, so the whole
-		// image sits on a blurred, darkened copy of itself. A banner blown up that far turns into a smear, so it
-		// gets the title cards' backdrop instead. A picture that would reach under the name drops below it.
-		let whole = await frame().resize(W - 96, H - 96, { fit: 'inside' }).raw().toBuffer({ resolveWithObject: true });
-		let top = Math.round((H - whole.info.height) / 2);
-		if (top < NAME_BASELINE + 24 && (W - whole.info.width) / 2 < NAME_X + NAME_WIDTH + 24) {
-			whole = await frame().resize(W - 96, H - 160, { fit: 'inside' }).raw().toBuffer({ resolveWithObject: true });
-			top = 112;
-		}
-		const behind = aspect >= 2.4
-			? sharp(backdrop)
-			: frame().resize(W, H, { fit: 'cover' }).blur(30).modulate({ brightness: 0.45, saturation: 0.8 });
-		picture = behind.composite([{ input: whole.data, raw: whole.info, left: Math.round((W - whole.info.width) / 2), top }]);
-	}
-	// Compositing can add an alpha channel, and sharp would strip it before the composite if asked in the same
-	// pipeline, so that happens in a second pass.
-	const flat = await picture.raw().toBuffer({ resolveWithObject: true });
-	const { data, info } = await sharp(flat.data, { raw: flat.info }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-	const hero = () => sharp(data, { raw: info });
-
-	// Measures the name's corner. Laplacian sharpness runs high on text and UI and low on open floor or sky, and
-	// a third-size copy catches big lettering that full size misses.
-	const corner = await hero().extract({ left: 0, top: 0, width: 480, height: 140 }).png().toBuffer();
-	const { sharpness, channels } = await sharp(corner).stats();
-	const { sharpness: coarse } = await sharp(await sharp(corner).resize(160, 47).png().toBuffer()).stats();
-	const brightness = (channels[0].mean + channels[1].mean + channels[2].mean) / 3;
-	const bright = brightness > 190;
-
-	// Around the name the picture softens, blurred where it's busy so UI text can't tangle with the letters. A
-	// bright corner gets a light wash and a dark name. Any other corner dims until it's no brighter than about 72
-	// of 255 and keeps the white name, so a dark render barely changes.
-	let soft = hero();
-	if (Math.max(sharpness, coarse) > 2.2) soft = soft.blur(16);
-	if (!bright) soft = soft.modulate({ brightness: Math.min(1, 72 / Math.max(brightness, 1)) });
-	const frost = await sharp(await soft.raw().toBuffer(), { raw: { width: W, height: H, channels: 3 } })
-		.joinChannel(VIGNETTE, { raw: { width: W, height: H, channels: 1 } })
-		.png()
-		.toBuffer();
-	const look = bright ? onBright : onDark;
-	return hero()
-		.composite([{ input: frost }, { input: look.wash }, { input: look.name }])
-		.jpeg(JPEG)
-		.toBuffer();
+	return Buffer.from(await res.arrayBuffer());
 }
 
-function titleCard(title: string) {
-	const png = layer((canvas) => {
-		drawBackdrop(canvas);
-		drawName(canvas, MUTED);
+async function aspectOf(input: Buffer) {
+	const { width = W, height = H, pageHeight = height } = await sharp(input, { pages: 1 }).metadata();
+	return width / pageHeight;
+}
 
-		// The biggest size that keeps the title to three lines. Then the narrowest measure that keeps the same
-		// number of lines, so they come out about even and nothing dangles on its own.
-		const style = (size: number): TextStyle => ({ color: WHITE, fontSize: size, heightMultiplier: 1.06, letterSpacing: -size / 100 });
-		let size = 92;
-		let heading = paragraph(title, style(size), 1040);
-		while (heading.getLineMetrics().length > 3 && size > 56) {
-			heading.delete();
-			size -= 2;
-			heading = paragraph(title, style(size), 1040);
-		}
-		const count = heading.getLineMetrics().length;
-		let narrow = 0;
-		let wide = 1040;
-		while (wide - narrow > 2) {
-			const width = (narrow + wide) / 2;
-			heading.layout(width);
-			if (heading.getLineMetrics().length > count) narrow = width;
-			else wide = width;
-		}
-		heading.layout(wide);
+// A GIF or animated WebP gives its middle frame, since the first is often a blank lead-in.
+async function frameOf(input: Buffer) {
+	const { pages = 1 } = await sharp(input).metadata();
+	return sharp(input, { page: Math.floor(pages / 2), pages: 1 }).flatten({ background: '#18181b' });
+}
 
-		// Centred between the name and the bottom quarter, where X lays its own title box over the card.
-		const lines = heading.getLineMetrics();
-		const capTop = (130 + 472) / 2 - (CAP * size + lines[lines.length - 1].baseline - lines[0].baseline) / 2;
-		canvas.drawParagraph(heading, NAME_X - 2, capTop - lines[0].baseline + CAP * size);
-		heading.delete();
-	});
-	return sharp(png).jpeg(JPEG).toBuffer();
+// The picture cropped to the plate around its most striking part, with the frame drawn just inside the edge.
+async function drawPlate(canvas: Canvas, input: Buffer, x: number, y: number, w: number, h: number) {
+	const { data, info } = await (await frameOf(input))
+		.resize(w, h, { fit: 'cover', position: 'attention' })
+		.ensureAlpha()
+		.raw()
+		.toBuffer({ resolveWithObject: true });
+	const picture = CanvasKit.MakeImage(
+		{
+			width: info.width,
+			height: info.height,
+			alphaType: CanvasKit.AlphaType.Unpremul,
+			colorType: CanvasKit.ColorType.RGBA_8888,
+			colorSpace: CanvasKit.ColorSpace.SRGB,
+		},
+		data,
+		info.width * 4,
+	)!;
+	canvas.save();
+	canvas.clipRRect(CanvasKit.RRectXY(CanvasKit.XYWHRect(x, y, w, h), PLATE_RADIUS, PLATE_RADIUS), CanvasKit.ClipOp.Intersect, true);
+	canvas.drawImage(picture, x, y);
+	canvas.restore();
+	picture.delete();
+
+	const paint = new CanvasKit.Paint();
+	paint.setStyle(CanvasKit.PaintStyle.Stroke);
+	paint.setStrokeWidth(2);
+	paint.setColor(FRAME);
+	paint.setAntiAlias(true);
+	canvas.drawRRect(CanvasKit.RRectXY(CanvasKit.XYWHRect(x + 1, y + 1, w - 2, h - 2), PLATE_RADIUS - 1, PLATE_RADIUS - 1), paint);
+	paint.delete();
+}
+
+async function card(title: string, date: string, hero?: Buffer) {
+	const surface = CanvasKit.MakeSurface(W, H)!;
+	try {
+		const canvas = surface.getCanvas();
+		canvas.clear(GROUND);
+		drawAt(canvas, paragraph('Ronald Burns', { color: PURPLE, fontSize: NAME_SIZE, letterSpacing: -NAME_SIZE / 100 }), M, M + CAP * NAME_SIZE);
+		const dateLine = paragraph(date, { color: MUTED, fontSize: DATE_SIZE }, 'Atkinson');
+
+		const aspect = hero ? await aspectOf(hero) : 0;
+		if (hero && aspect > 3) {
+			// A banner is too thin for the plate on the right, so it runs the full width under the title.
+			const heading = setTitle(title, { max: 72, min: 48, width: W - 2 * M - 60, maxLines: 2 });
+			const plateH = Math.min(240, Math.round((W - 2 * M) / aspect));
+			const group = DATE_CAP * DATE_SIZE + DATE_GAP + heading.height + 56 + plateH;
+			const top = Math.max(140, (150 + 560) / 2 - group / 2);
+			drawAt(canvas, dateLine, M, top + DATE_CAP * DATE_SIZE);
+			drawAt(canvas, heading.p, M - 2, top + DATE_CAP * DATE_SIZE + DATE_GAP + CAP * heading.size);
+			await drawPlate(canvas, hero, M, Math.round(top + group - plateH), W - 2 * M, plateH);
+		} else {
+			if (hero) await drawPlate(canvas, hero, PLATE_X, M, W - M - PLATE_X, H - 2 * M);
+			const heading = hero
+				? setTitle(title, { max: 58, min: 36, width: PLATE_X - M - 52, maxLines: 4 })
+				: setTitle(title, { max: 92, min: 56, width: W - 2 * M - 60, maxLines: 3 });
+			// The date and title centre between the name and the bottom quarter.
+			const group = DATE_CAP * DATE_SIZE + DATE_GAP + heading.height;
+			const top = (150 + 472) / 2 - group / 2;
+			drawAt(canvas, dateLine, M, top + DATE_CAP * DATE_SIZE);
+			drawAt(canvas, heading.p, M - 2, top + DATE_CAP * DATE_SIZE + DATE_GAP + CAP * heading.size);
+		}
+
+		const image = surface.makeImageSnapshot();
+		const png = Buffer.from(image.encodeToBytes()!);
+		image.delete();
+		return await sharp(png).removeAlpha().jpeg(JPEG).toBuffer();
+	} finally {
+		surface.delete();
+	}
 }
 
 export const getStaticPaths = (async () => {
@@ -235,14 +245,16 @@ export const getStaticPaths = (async () => {
 
 export const GET: APIRoute = async ({ props }) => {
 	const { id, data } = (props as { entry: CollectionEntry<'projects'> }).entry;
-	let card: Buffer | undefined;
+	// The same call the post header's FormattedDate makes, so the two always agree.
+	const date = data.date.toLocaleDateString('en-us', { year: 'numeric', month: 'short', day: 'numeric' });
+	let jpeg: Buffer | undefined;
 	if (data.image) {
 		try {
-			card = await heroCard(data.image);
+			jpeg = await card(data.title, date, await fetchHero(data.image));
 		} catch (e) {
-			console.warn(`[og] ${id} falls back to its title card. The hero failed with ${e}`);
+			console.warn(`[og] ${id} gets a card without its hero, which failed with ${e}`);
 		}
 	}
-	card ??= await titleCard(data.title);
-	return new Response(new Uint8Array(card), { headers: { 'Content-Type': 'image/jpeg' } });
+	jpeg ??= await card(data.title, date);
+	return new Response(new Uint8Array(jpeg), { headers: { 'Content-Type': 'image/jpeg' } });
 };
