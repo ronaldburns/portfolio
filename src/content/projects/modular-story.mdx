@@ -142,7 +142,7 @@ The When it ends row and the Beat Tag picker follow Epic's Avalanche transition 
 The stock compiler accepts two mistakes that wreck a story. A state with no considered task gets a completion bit that nothing sets, so it never ends. A beat that ends with no transition on it or above it sends the tree back to the root, which selects again before ExitState runs. The Beat task hasn't written its fact yet, so the same beat starts over, forever. The editor schema's `HandlePostInternalCompile` fails the compile for both, and for two beats that share a tag, with the error on the beat.
 
 <Figure
-  src="projects/modular-story/compile-error.png"
+  src="projects/modular-story/compile-error-purple.png"
   alt="StateTree Compiler Results listing an error on a beat that has no gate."
   width={908}
   height={544}
@@ -180,8 +180,8 @@ EStateTreeRunStatus FStoryTask_WaitForFact::EnterState(FStateTreeExecutionContex
 The gate binds the facts subsystem's native delegate. When the fact passes, the gate finishes itself through the weak execution context, and `FinishTask` schedules the tree's next tick, which wakes it for the transition. Fact writes never pass through StateTree's event queue, which holds 64 events, so a burst of them can't overflow it. Watch the tick lane in the timeline below.
 
 <Figure
-  src="projects/modular-story/gates-sleep-timeline.png"
-  alt="Timeline of four beats. The StateTree component tick lane is asleep through each beat and shows a short orange spike as the chapter starts and each time the player passes a gate. A separate lane shows the Look gate's 10 Hz timer during one beat, and a fact lane shows each beat's fact written as it ends."
+  src="projects/modular-story/gates-sleep-timeline-purple.png"
+  alt="Timeline of four beats. The StateTree component tick lane is asleep through each beat and shows a short purple spike as the chapter starts and each time the player passes a gate. A separate lane shows the Look gate's 10 Hz timer during one beat, and a fact lane shows each beat's fact written as it ends."
   width={1920}
   height={900}
   caption="A chapter over time. The component's tick stays off while a gate waits, and each pass wakes it for the transition."
@@ -207,7 +207,7 @@ Any gate can also send an Outcome Event, so two gates in one state, each with a 
 An effect applies in EnterState and undoes itself in ExitState. Set Fact and Set State have a Persist box that skips the undo. A Set State that turns a door's Locked state off with Persist leaves the door unlocked after its state ends. A Set State that lights a lamp without Persist turns it off again when its state exits. The two lines under the state bars show the difference.
 
 <Figure
-  src="projects/modular-story/effect-lifetime.png"
+  src="projects/modular-story/effect-lifetime-purple.png"
   alt="Two step lines under two state bars. The door's Locked state goes off when Open Door starts and stays off. The lamp's Lit state comes on when Look Inside starts and goes off when it exits, and a child state returning to Look Inside leaves the lamp on."
   width={1920}
   height={860}
@@ -250,7 +250,7 @@ void FStoryTask_Beat::ExitState(FStateTreeExecutionContext& Context, const FStat
 StateCompleted can't do this job, because an event transition skips it, and branching on a gate's Outcome Event is an event transition. Quitting mid-beat replays that beat from its start, which I accept, since I only plan checkpoints at beat boundaries. After a restore, the root tries each beat in order.
 
 <Figure
-  src="projects/modular-story/load-fall-through.png"
+  src="projects/modular-story/load-fall-through-purple.png"
   alt="Restored facts on the left, with the first two beats set to 1. On the right the chapter's root tries its beats in order. Find Key and Open Door fail their skip conditions and are skipped, and Look Inside enters."
   width={1920}
   height={740}
@@ -272,7 +272,7 @@ Four console commands do most of the driving, and none of them exist in Shipping
 `Story.Jump <beat>` is a load with made-up facts. It reads the chapter the way it runs, into subtrees and linked templates, and finds the first beat with that tag or one under it. Then it stops the chapter, rewrites the beat facts around it and starts the chapter again.
 
 <Figure
-  src="projects/modular-story/story-jump.png"
+  src="projects/modular-story/story-jump-purple.png"
   alt="Four beats in the order they run, with Look Inside as the jump's target. The facts for Find Key and Open Door go from 0 to 1, the target and the beat after it are cleared, and the player goes to the mark of Open Door's Place Player."
   width={1920}
   height={880}

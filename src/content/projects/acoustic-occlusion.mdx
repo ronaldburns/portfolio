@@ -58,10 +58,10 @@ Sound gets through a wall by shaking it. A heavy wall barely moves, and any wall
 
 A stud wall is two sheets with air between them. The air acts as a spring, the sheets resonate together around 100 to 125 Hz, and above that the loss climbs about 18 dB per octave. The stud wall the National Research Council of Canada measured loses 16 dB in the low band and 46 in the mid, so the thump passes and the voice doesn't. Glass goes the other way. Above about 2.1 kHz the bending waves in a 6 mm pane line up with the sound in the air and the loss stops climbing, so its high band (29 dB) sits under its mid band (32 dB). And gaps win. A 30 dB door with a 13 mm undercut comes out at 21.4 dB, because more sound goes under the door than through it.
 
-Compare the shape of each orange line with the grey one, which is stock occlusion at my old settings.
+Compare the shape of each purple line with the grey one, which is stock occlusion at my old settings.
 
 <Figure
-  src="projects/acoustic-occlusion/chart-band-loss-by-material.png"
+  src="projects/acoustic-occlusion/chart-band-loss-by-material-purple.png"
   alt="Four small charts of heard loss against frequency. The stud wall rises from 8 dB in the bass to 23 dB in the mids, glass peaks at 16 dB in the mids and dips to 14.5 dB above, concrete climbs from 18.5 to 27 dB, and the hollow door climbs gently from about 7 to 10 dB. Stock occlusion is the same grey curve in every panel. It starts at 14 dB and rises."
   width={1800}
   height={1368}
@@ -105,7 +105,7 @@ A single trace turns every edge into a cliff: step past a doorframe and the soun
 Say one ray of 13 slips through a gap and the other 12 cross a stud wall at 46 dB. How much does the wall take off? Guess before you look.
 
 <Figure
-  src="projects/acoustic-occlusion/chart-energy-vs-db-mean.png"
+  src="projects/acoustic-occlusion/chart-energy-vs-db-mean-purple.png"
   alt="Line chart of combined loss against the number of clear rays out of 13. Averaging as energy drops from 46 dB to 11.1 dB with one clear ray. Averaging in dB falls in a straight line and is still 42.5 dB with one clear ray. Taking the loudest ray drops straight to 0 dB."
   width={1800}
   height={1044}
@@ -159,7 +159,7 @@ If the backward cast finds nothing, as with a single plane or an open mesh, the 
 The numbers live on the physical material, in a `UAcousticMaterial` asset user data entry: lab loss per band at a reference thickness, a slope per doubling of thickness, and a leak fraction for gaps no ray will find, like a door undercut. I took defaults for 14 house materials from published lab measurements where they exist. Concrete gains 4 dB per doubling in the mid band and plywood 2. Hollow assemblies (stud walls, doors, furniture, appliances) get zero, because their collision box is solid and the wall isn't. Summing a stud wall's two sheets as separate panels would over-predict its bass loss by about 15 dB.
 
 <Figure
-  src="projects/acoustic-occlusion/chart-thickness-scaling.png"
+  src="projects/acoustic-occlusion/chart-thickness-scaling-purple.png"
   alt="Line chart of mid-band loss against thickness on a doubling scale. Concrete rises from 42 to 54 dB between 7.5 and 60 cm, plywood from 18.5 to 24.5 dB between 1.27 and 10.16 cm, and the stud wall stays at 46 dB from 5.75 to 46 cm."
   width={1800}
   height={1044}
@@ -213,7 +213,7 @@ Transmission alone gets direction wrong. If a wall blocks the straight line and 
 Each doorway is priced with Kurze-Anderson, an empirical fit to Maekawa's barrier curve, summed over the opening's edges and capped at 25 dB. It gives 5 dB at grazing and nothing once an edge clears the line by about a tenth of a wavelength, 18 cm in the low band and 1.2 cm in the high.
 
 <Figure
-  src="projects/acoustic-occlusion/chart-diffraction-kurze-anderson.png"
+  src="projects/acoustic-occlusion/chart-diffraction-kurze-anderson-purple.png"
   alt="Line chart of diffraction loss against the extra path length over one edge, for 177 Hz, 705 Hz and 2.8 kHz. All three pass through 5 dB at zero. At 200 cm they reach about 16, 22 and 28 dB, with a dashed line marking the 25 dB cap per doorway."
   width={1800}
   height={1044}
