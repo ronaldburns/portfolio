@@ -27,7 +27,7 @@ This is an unofficial, non-commercial fan tech demo. The characters, their model
 
 <Compare before="projects/endfield-toon-renderer/compare-stock.jpg" after="projects/endfield-toon-renderer/compare-mine.jpg" beforeLabel="Stock Substrate Toon" afterLabel="My character path" alt="The same pink-haired character twice, in the same pose. On the stock side her bangs hide her eyes and dark patches cover her face. On my side her eyes show over the bangs, her face is evenly lit and her jacket reads as translucent pink." width={1920} height={1080} caption="Epic's Substrate Toon BSDF fed her own textures under the key light, against my character path. Drag to compare." />
 
-<Facts items={[{ label: 'Engine', value: 'Unreal Engine 6, source build' }, { label: 'Rendering', value: 'Substrate, forward shading, 4x MSAA' }, { label: 'Platforms', value: 'PC VR, plus the Android Vulkan preview for Quest' }, { label: 'Languages', value: 'C++, HLSL' }, { label: 'Frames shown', value: 'Movie Render Queue' }]} />
+<Facts items={[{ label: 'Engine', value: 'Unreal Engine 6, source build' }, { label: 'Rendering', value: 'Substrate, forward shading, 4x MSAA' }, { label: 'Platforms', value: 'PC VR, plus the Android Vulkan preview for Quest' }, { label: 'Languages', value: 'C++, HLSL' }]} />
 
 ## What stock Unreal already does
 
@@ -161,7 +161,7 @@ The step is a fraction of the view's height, and with edge antialiasing on it sa
 
 This is the part of the style everyone recognizes and the stock depth test can't do. The bangs are in front of the eyes, and the eyes and brows have to show anyway.
 
-<Compare before="projects/endfield-toon-renderer/eyes-depth-v2.jpg" after="projects/endfield-toon-renderer/eyes-stencil-v2.jpg" beforeLabel="Depth test" afterLabel="Stencil test" alt="Close-up of the pink-haired character's face from slightly above. With the depth test, strands of her bangs cut across both eyes and hide her brows. With the stencil test, her brows, lashes and eyes draw over the bangs." width={1472} height={1104} caption="One 4K frame on my character path, rendered with the hair's stencil test off and on, cropped at full resolution." />
+<Compare before="projects/endfield-toon-renderer/eyes-depth-v2.jpg" after="projects/endfield-toon-renderer/eyes-stencil-v2.jpg" beforeLabel="Depth test" afterLabel="Stencil test" alt="Close-up of the pink-haired character's face from slightly above. With the depth test, strands of her bangs cut across both eyes and hide her brows. With the stencil test, her brows, lashes and eyes draw over the bangs." width={1472} height={1104} caption="The same frame with the hair's stencil test off and on." />
 
 Unreal's stencil tools for this are per primitive, through custom depth, and an eye is only a material slot on the head mesh. So I made stencil a material property. A material can write a Scene Stencil Value from 0 to 3 into stencil bits 5 and 6, and another material can test against it with a compare function and a reference value. On PC those bits alias the lighting channel bits, whose only readers are deferred, so forward shading gets them for free.
 
@@ -191,7 +191,7 @@ For the sheer cloth I expected to write my own translucency and never needed to.
 
 Characters in this style carry their own reflections. Clothing should reflect a soft studio environment picked for the character, and the level's reflection captures only know the level. So the post process volume got a Character Cubemap slot.
 
-<Compare before="projects/endfield-toon-renderer/cubemap-nz-v2.jpg" after="projects/endfield-toon-renderer/cubemap-sb-v2.jpg" beforeLabel="neuer_zollhof" afterLabel="shanghai_bund" alt="The masked character in a long glossy coat, arms held out from her sides. Under neuer_zollhof her coat and visor reflect a soft blue lavender. Under shanghai_bund the coat turns silver with gold streaks and the shoulder pad goes bright yellow. A small copy of each panorama sits in a bottom corner." width={1920} height={1080} caption="One frame rendered with each cubemap in the slot. The insets are the source panoramas, both CC0 from Poly Haven by Greg Zaal." />
+<Compare before="projects/endfield-toon-renderer/cubemap-nz-v2.jpg" after="projects/endfield-toon-renderer/cubemap-sb-v2.jpg" beforeLabel="neuer_zollhof" afterLabel="shanghai_bund" alt="The masked character in a long glossy coat, arms held out from her sides. Under neuer_zollhof her coat and visor reflect a soft blue lavender. Under shanghai_bund the coat turns silver with gold streaks and the shoulder pad goes bright yellow. A small copy of each panorama sits in a bottom corner." width={1920} height={1080} caption="The same frame with each cubemap in the slot. The insets are the source panoramas, both CC0 from Poly Haven by Greg Zaal." />
 
 Only cloth samples it, and the outline hulls skip it. The specular uses a fitted environment BRDF (the split-sum approach from GGX image-based lighting) and picks the mip from roughness. Hair, skin and eyes reflect nothing, and the stock environment specular switches off for character materials whenever a cubemap is set. The strongest volume's cubemap wins with no blending. I authored the cubes at 128 px with full mips and HDR compression. There's no intensity control yet, which is why the demo plays brightened copies.
 
@@ -199,7 +199,7 @@ Only cloth samples it, and the outline hulls skip it. The specular uses a fitted
 
 The outlines are inverted hulls, one of the oldest tricks in toon rendering. Draw a copy of the mesh pushed out along its normals, cull its front faces, and colour what's left. Unreal's per-slot overlay materials draw the copies, so the hull reuses each section's skinned vertex factory and skins nothing twice. It also casts no shadow.
 
-<Compare before="projects/endfield-toon-renderer/outlines-off-v2.jpg" after="projects/endfield-toon-renderer/outlines-on-v2.jpg" beforeLabel="Hulls off" afterLabel="Hulls on" alt="Close-up of the pink-haired character from her horn tips to her collar. With the hulls on, thin dark lines trace her horns, her hair strands, her hair clip and the line of her jaw." width={1600} height={1600} caption="One 4K frame rendered with the hull width at zero and at its authored value, cropped at full resolution." />
+<Compare before="projects/endfield-toon-renderer/outlines-off-v2.jpg" after="projects/endfield-toon-renderer/outlines-on-v2.jpg" beforeLabel="Hulls off" afterLabel="Hulls on" alt="Close-up of the pink-haired character from her horn tips to her collar. With the hulls on, thin dark lines trace her horns, her hair strands, her hair clip and the line of her jaw." width={1600} height={1600} caption="The same frame with the hull width at zero and at its authored value." />
 
 Two pieces were missing. Materials had no way to cull front faces, so I added a Cull Front Faces flag to `UMaterial` and reversed the mesh pass's cull mode for it. The bigger gap was the normals. A hull pushed along split normals cracks at every hard edge, so it needs smooth normals that the mesh's shading doesn't use. My ToonOutline plugin bakes them. It welds vertices by position, averages angle-weighted face normals in double precision, and stores the result in tangent space in a pair of spare UV channels, along with a coherence value, the length of the weighted normal sum over the sum of weights. Where the faces around a vertex disagree, at a sharp corner, coherence drops and the line tapers instead of spiking.
 
@@ -256,7 +256,7 @@ That grid hid the best bug of the project. On the Android preview, square holes 
 
 Quest runs Unreal's mobile forward renderer, so every part of this path exists twice, once in Substrate's PC forward lighting and once in its mobile forward lighting. I check the mobile side in the editor's Android Vulkan preview, with the generic Android XR device profile, since the plain Android one turns dynamic shadows off. It's not a headset, and I don't present it as one, but it runs the mobile shaders and the mobile renderer.
 
-<Compare before="projects/endfield-toon-renderer/quest-pc.jpg" after="projects/endfield-toon-renderer/quest-android.jpg" beforeLabel="PC" afterLabel="Android Vulkan preview" alt="The pink-haired character rendered twice in the same pose, once on PC and once with the Android Vulkan preview. The two are nearly identical." width={1120} height={840} caption="One frame on both renderers. The mean difference is 1.02 levels in 255, and 1.4% of pixels differ by more than 10." />
+<Compare before="projects/endfield-toon-renderer/quest-pc.jpg" after="projects/endfield-toon-renderer/quest-android.jpg" beforeLabel="PC" afterLabel="Android Vulkan preview" alt="The pink-haired character rendered twice in the same pose, once on PC and once with the Android Vulkan preview. The two are nearly identical." width={1120} height={840} caption="The same frame on both renderers." />
 
 Getting there took three engine fixes outside the toon code.
 
@@ -287,8 +287,6 @@ Aliasing is the other VR enemy, and toon bands alias by design, since a ramp ste
 Every outlined section costs extra draws per pass, so those numbers are mostly a count of material sections. Merging sections is the obvious next cut, and I've planned it but not run it. On packaged PC builds, ray tracing being enabled forced a separate velocity pass, and turning it off for Windows took the frame from 119 draws to 116.
 
 ## What's next
-
-The frames here come from Movie Render Queue with temporal samples, so edges look cleaner than they do in a headset, and the mobile numbers come from the editor preview except where I've named Quest 3.
 
 I still want a matcap mode for cloth, rain and snow on characters, a bloom and vignette chain tuned for the style, ambient presets, and premultiplied alpha for the eyes. Here's where it stands now, in a fogged stage with one backlight and nothing else.
 
