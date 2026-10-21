@@ -69,7 +69,7 @@ const jsonLd = {
 							(url || repository) && (
 								<div class="flex gap-4 mt-4 text-sm">
 									{url && (
-										<a href={url} target="_blank" rel="noopener" class="text-amber-400 hover:underline">
+										<a href={url} target="_blank" rel="noopener" class="text-accent hover:underline">
 											Live →
 										</a>
 									)}
@@ -78,7 +78,7 @@ const jsonLd = {
 											href={repository}
 											target="_blank"
 											rel="noopener"
-											class="text-amber-400 hover:underline"
+											class="text-accent hover:underline"
 										>
 											Repository →
 										</a>
@@ -207,8 +207,8 @@ const jsonLd = {
 								const id = entry.target.id;
 								tocLinks.forEach((l) => {
 									const active = l.getAttribute('data-toc-link') === id;
-									l.classList.toggle('text-amber-400', active);
-									l.classList.toggle('border-amber-400', active);
+									l.classList.toggle('text-accent', active);
+									l.classList.toggle('border-accent', active);
 									l.classList.toggle('text-zinc-500', !active);
 								});
 							});

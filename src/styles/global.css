@@ -2,8 +2,13 @@
 
 :root {
 	color-scheme: dark;
-	--accent: #fb923c; /* amber-400, nod to the old site's orange */
-	--accent-soft: #fdba74;
+	--accent: #c27aff; /* Tailwind's purple-400 */
+	--accent-soft: #dab2ff; /* purple-300 */
+}
+
+/* Lets Tailwind classes like text-accent and border-accent/40 use the same colour. */
+@theme inline {
+	--color-accent: var(--accent);
 }
 
 html {
@@ -17,12 +22,6 @@ body {
 	margin: 0;
 	min-height: 100vh;
 	color: #d4d4d8; /* zinc-300 */
-	background-image: radial-gradient(
-		60% 50% at 50% -10%,
-		rgba(251, 146, 60, 0.06),
-		transparent 70%
-	);
-	background-repeat: no-repeat;
 }
 
 a {
@@ -34,7 +33,7 @@ a:hover {
 }
 
 ::selection {
-	background: rgba(251, 146, 60, 0.3);
+	background: color-mix(in srgb, var(--accent) 30%, transparent);
 	color: #fff;
 }
 
@@ -120,7 +119,7 @@ a:hover {
 	border: 1px solid #27272a;
 	border-radius: 4px;
 	padding: 0.1em 0.4em;
-	color: #fde68a;
+	color: #e4e4e7;
 }
 
 /* Code blocks + copy button */
@@ -202,7 +201,7 @@ a:hover {
 	margin: 0 -1.2em;
 }
 .content pre code .line.highlighted {
-	background: rgba(251, 146, 60, 0.12);
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
 	box-shadow: inset 2px 0 0 var(--accent);
 }
 .content pre code .line.diff.add {
@@ -237,8 +236,8 @@ html.js [data-animate].revealed {
 }
 .search-result:hover,
 .search-result:focus-visible {
-	background: rgba(251, 146, 60, 0.1);
-	border-color: rgba(251, 146, 60, 0.25);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	border-color: color-mix(in srgb, var(--accent) 25%, transparent);
 	outline: none;
 }
 .search-result-title {
@@ -258,8 +257,8 @@ html.js [data-animate].revealed {
 	line-height: 1.4;
 }
 .search-result-excerpt mark {
-	background: rgba(251, 146, 60, 0.25);
-	color: #fde68a;
+	background: color-mix(in srgb, var(--accent) 25%, transparent);
+	color: #fff;
 	border-radius: 2px;
 	padding: 0 1px;
 }
