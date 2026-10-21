@@ -180,12 +180,44 @@ Once a jolt fires, the track doesn't re-arm until the jolt falls below half the 
 
 A standalone headset can't play everything physics asks for. The default profile allows 8 new sounds and 24 particle effects a frame. Sounds are admitted or refused on the spot with cheap counters, and particle effects are staged and resolved together once a frame.
 
-<Flow caption="How staged particle effects are resolved each frame." steps={[
-  { title: 'Cull', body: "Drop events beyond the category's viewer distance, 60 m by default" },
-  { title: 'Sort', body: 'Order by priority, then by distance to the viewer' },
-  { title: 'Merge', body: 'Fold nearby events of one category into one record' },
-  { title: 'Cap', body: 'Past the soft cap, lower the intensity. At the hard cap, drop the event and record why' },
-  { title: 'Scale', body: 'Apply the global and dynamic intensity scales' }]} />
+An event past its category's viewer distance, 60 m by default, is dropped when it's staged. Everything else waits for the frame's resolve, trimmed here to the sort and its two passes. The clamp at the end of the second pass is where the global and dynamic intensity scales come in.
+
+```cpp title="ContextEffectsBudgetManager.cpp"
+// Sort by priority, then nearest first within a priority. Critical has the lowest enum value.
+Staged.StableSort(...);
+
+// First pass. Merge events of one category that land inside the dedup radius this frame.
+// Intensities add up so a pile of small hits reads as one strong hit instead of many weak
+// ones, speed keeps the fastest contributor, and the position follows the strongest one.
+...
+Kept.Params.Intensity = FMath::Min(Kept.Params.Intensity + Other.Params.Intensity, 1.0f);
+Kept.Params.RawSpeed = FMath::Max(Kept.Params.RawSpeed, Other.Params.RawSpeed);
+Other.bMergedAway = true;
+...
+
+// Second pass. Apply caps to the survivors and commit them.
+for (FContextEffectsPendingVFX& Item : Staged)
+{
+	...
+	if (State.FrameVFXCount >= Budget.MaxEventsPerFrame)
+	{
+		OnDrop(Item, EContextEffectDropReason::OverCategoryCap);
+		++AccumulatingStats.Dropped;
+		continue;
+	}
+
+	if (Budget.bDowngradeBeforeDrop && State.FrameVFXCount >= Budget.SoftCap)
+	{
+		Item.Params.Intensity *= Budget.DowngradeIntensityScale;
+		Item.bDowngraded = true;
+		++AccumulatingStats.Downgraded;
+	}
+	...
+	Item.Params.Intensity = FMath::Clamp(Item.Params.Intensity * IntensityScale, 0.0f, 1.0f);
+	...
+	Commit(Item);
+}
+```
 
 Merged intensities add up and clamp at 1, so twenty debris hits in a corner become one strong record and the pile still reads as a pile. Critical events, such as the player's hand hitting a wall in front of the camera, skip culling and merging and ignore every cap except a safety ceiling of 64 a frame. Sounds have their own caps, and a landing mutes the same actor's footsteps for 0.4 seconds so the two never stack.
 
