@@ -25,7 +25,7 @@ import Stats from '../../components/article/Stats.astro';
 This is an unofficial, non-commercial fan tech demo. The characters, their models, textures and animations belong to Hypergryph and GRYPHLINE (Arknights: Endfield), and I'm not affiliated with or endorsed by either of them. The shading code, engine changes, materials, lighting and scenes in this article are mine.
 </Disclaimer>
 
-<Compare before="projects/endfield-toon-renderer/compare-stock.jpg" after="projects/endfield-toon-renderer/compare-mine.jpg" beforeLabel="Stock Substrate Toon" afterLabel="My character path" alt="The same pink-haired character twice, in the same pose. On the stock side her bangs hide her eyes and dark patches cover her face. On my side her eyes show over the bangs, her face is evenly lit and her jacket reads as translucent pink." width={1920} height={1080} caption="Epic's Substrate Toon BSDF fed her own textures under the key light, against my character path. Drag to compare." />
+<Compare before="projects/endfield-toon-renderer/compare-stock-v2.jpg" after="projects/endfield-toon-renderer/compare-mine-v2.jpg" beforeLabel="Stock Substrate Toon" afterLabel="My character path" alt="The same pink-haired character twice, in the same pose. On the stock side her bangs hide her eyes and dark patches cover her face. On my side her eyes show over the bangs, her face is evenly lit and her jacket reads as translucent pink." width={1920} height={1080} caption="Epic's Substrate Toon BSDF fed her own textures under the key light, against my character path. Drag to compare." />
 
 <Facts items={[{ label: 'Engine', value: 'Unreal Engine 6, source build' }, { label: 'Rendering', value: 'Substrate, forward shading, 4x MSAA' }, { label: 'Platforms', value: 'PC VR, plus the Android Vulkan preview for Quest' }, { label: 'Languages', value: 'C++, HLSL' }]} />
 
@@ -181,7 +181,7 @@ I tried and dropped four other approaches: drawing the hull before the hair, two
 
 Two materials in the style need more than one layer. A jacket with a lacquered finish gets a second gloss over the toon base, and a sheer sleeve shows the skin under it.
 
-<Gallery cols={2} items={[{ src: 'projects/endfield-toon-renderer/clear-coat.jpg', alt: 'The pink-haired character from the waist up. Her translucent pink jacket has bright glossy streaks over the toon shading.', label: 'Toon Clear Coat', width: 1080, height: 810 }, { src: 'projects/endfield-toon-renderer/sheer-sleeve.jpg', alt: 'Close-up of a sheer pink sleeve beside her torso, with the arm visible through the fabric.', label: 'Sheer cloth', width: 1080, height: 810 }]} caption="A second gloss layer on the jacket, and skin showing through the sleeve." />
+<Gallery cols={2} items={[{ src: 'projects/endfield-toon-renderer/clear-coat-v2.jpg', alt: 'The pink-haired character from the waist up. Her translucent pink jacket has bright glossy streaks over the toon shading.', label: 'Toon Clear Coat', width: 1080, height: 810 }, { src: 'projects/endfield-toon-renderer/sheer-sleeve-v2.jpg', alt: 'Close-up of a sheer pink sleeve beside her torso, with the arm visible through the fabric.', label: 'Sheer cloth', width: 1080, height: 810 }]} caption="A second gloss layer on the jacket, and skin showing through the sleeve." />
 
 The clear coat is the fifth node, with its own Fresnel and specular on top of the toon cloth. The demo jacket runs it at 0.85 smoothness and 0.52 metallic.
 
@@ -256,7 +256,7 @@ That grid hid the best bug of the project. On the Android preview, square holes 
 
 Quest runs Unreal's mobile forward renderer, so every part of this path exists twice, once in Substrate's PC forward lighting and once in its mobile forward lighting. I check the mobile side in the editor's Android Vulkan preview, with the generic Android XR device profile, since the plain Android one turns dynamic shadows off. It's not a headset, and I don't present it as one, but it runs the mobile shaders and the mobile renderer.
 
-<Compare before="projects/endfield-toon-renderer/quest-pc.jpg" after="projects/endfield-toon-renderer/quest-android.jpg" beforeLabel="PC" afterLabel="Android Vulkan preview" alt="The pink-haired character rendered twice in the same pose, once on PC and once with the Android Vulkan preview. The two are nearly identical." width={1120} height={840} caption="The same frame on both renderers." />
+<Compare before="projects/endfield-toon-renderer/quest-pc-v2.jpg" after="projects/endfield-toon-renderer/quest-android-v2.jpg" beforeLabel="PC" afterLabel="Android Vulkan preview" alt="The pink-haired character rendered twice in the same pose, once on PC and once with the Android Vulkan preview. The two are nearly identical." width={1120} height={840} caption="The same frame on both renderers." />
 
 Getting there took three engine fixes outside the toon code.
 
